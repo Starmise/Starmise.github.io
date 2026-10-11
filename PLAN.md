@@ -32,6 +32,7 @@ licencia libre.
 | Controles | Por defecto **relativos a cámara** (modernos); **tank controls** como opción "Modo clásico". |
 | Hosting | GitHub Pages vía GitHub Actions. Repo renombrado a `Starmise.github.io` → https://starmise.github.io/. El usuario hace los push. |
 | Audio | **Original y sintetizado en el navegador** (Web Audio): música, ambientes y efectos sin archivos de sonido. Nada de OST comerciales. |
+| Idiomas | **Español e inglés.** La primera visita pregunta; se recuerda y se cambia desde el título, Opciones o el modo lista (`?lang=en|es` en la URL lo fuerza). El español es la fuente; el inglés solo añade traducciones. |
 
 ## 3. Experiencia y mapeo del portafolio
 
@@ -153,6 +154,13 @@ Se implementará añadiendo un campo `room` a cada proyecto en `projects.json` y
   - [x] `.github/workflows/deploy.yml`: `npm ci` → `npm run build` → GitHub Pages (acciones con Node 24).
   - [ ] **(TODO del usuario)** Settings → Pages → Build and deployment → Source: **GitHub Actions** (hoy
         publica la rama tal cual, que sirve el código sin compilar). Luego push a `main`.
+- [x] **Puertas más visibles** (`src/world/doorMarkers.js`): luz que se cuela por debajo, charco de luz
+      en el piso y marco con brillo cálido; se intensifican al acercarse y laten cuando son el objetivo
+      de "Abrir". Hecho en código, sin regenerar las salas.
+- [x] **Idiomas (español / inglés):** pantalla de elección en la primera visita, interfaz y datos
+      traducidos, cambio desde el título, Opciones y modo lista, `?lang=` en la URL (ver §6.6).
+  - [ ] **(TODO del usuario)** Revisar la traducción al inglés de `src/data/en/` (bio, proyectos y
+        curiosidades) y ajustar el tono a tu gusto.
 - [ ] **(TODO del usuario)** Enlazar la nueva versión desde el portafolio clásico (`About-Me-Website`, que
       Claude no edita): un botón o aviso hacia https://starmise.github.io/.
 
@@ -204,6 +212,7 @@ Se implementará añadiendo un campo `room` a cada proyecto en `projects.json` y
 | `INT_<id>` | Objeto examinable ligado a un proyecto, o a un documento del perfil: `about`, `contact`, `trivia`. Un hijo con el material `MAT_Cover` recibe la portada (reducida a 128×96 en el navegador). |
 | `DOOR_<roomId>` | Puerta hacia otra sala. |
 | `SPAWN_<fromRoomId>` | Punto de aparición al entrar desde esa sala (Empty; su flecha +Z indica hacia dónde mira). `SPAWN_default` para el inicio. |
+| `DOORFRAME_*`, `DOORKNOB_*` | Marco y picaporte (hijos de `DOOR_`). El juego les da un brillo cálido para que la puerta se distinga (world/doorMarkers.js). |
 | `Room_Shell*` | Piso, muros y techo. El juego los dibuja con *polygon offset* (un poco "detrás") para que lo pegado a ellos —cuadros, ventanas, alfombras— no parpadee con el *vertex snapping*. |
 
 `INT_<id>` también acepta los documentos del perfil `about`, `contact`, `trivia` y `demoreel` (este
@@ -277,6 +286,24 @@ Todo el audio es **original y se sintetiza en el navegador** con Web Audio: no h
 - Para escuchar la música fuera del juego se puede renderizar con un `OfflineAudioContext`
   (`new Score(ctx, ctx.destination).start(0); score.scheduleUntil(segundos)`).
 
+### 6.6 Idiomas
+- **Elección antes de construir nada.** `src/main.js` decide el idioma (`?lang=` en la URL →
+  `settings.lang` guardado → pantalla de elección `ui/languageScreen.js`, que sugiere el idioma del
+  navegador), carga su diccionario (`src/i18n/es.js` o `en.js`, cada uno en su propio bloque de JS) y
+  solo entonces importa `boot.js` (el antiguo `main.js`). Así toda la UI se construye ya traducida.
+- **Cambiar de idioma recarga la página** (`changeLanguage()` en `core/i18n.js`; quita `?lang=` de la
+  URL y conserva `#lista`). Se eligió frente al repintado en caliente porque casi toda la UI arma su
+  HTML una vez al crearse; recargar es simple, fiable y casi instantáneo (todo está en caché).
+- **Interfaz:** `t('clave', { vars })`. Las claves viven en `src/i18n/<idioma>.js` (algunas son listas,
+  como la tabla de controles). En desarrollo, una clave inexistente avisa en la consola.
+- **Datos:** el español de `src/data/*.json` es la fuente única. `src/data/en/*.json` trae solo los
+  textos (proyectos y salas por `id`; el perfil como objeto parcial, con las listas de objetos
+  combinadas por posición) y `localizeData()` los aplica encima; lo no traducido queda en español.
+  Todo el código importa los datos de `src/data/index.js`.
+- `<html lang>`, `document.title` y la descripción se actualizan al idioma; las etiquetas de Open
+  Graph (generadas en el build) quedan en español con `og:locale:alternate = en_US`.
+- Coste: 2.7 kB (español) u 8 kB (inglés, con los datos) con gzip, más la pantalla de elección (~1 kB).
+
 ## 7. Estructura objetivo del repo
 
 ```
@@ -290,14 +317,15 @@ public/
   favicon.svg, favicon-32.png, apple-touch-icon.png, icon-192/512.png, manifest.webmanifest
   og-image.jpg    Vista previa de enlaces (1200×630)
 src/
-  main.js
+  main.js         Elección de idioma → boot.js (modo lista o juego)
+  i18n/           Textos de la interfaz por idioma (es.js, en.js)
   audio/          Motor, música, ambientes y efectos (todo sintetizado; sin archivos de audio)
   core/           Renderer, game loop, input, carga de assets
   render/         Materiales y post-proceso PS1
   world/          Salas, cámaras, triggers, puertas, colisiones
   player/         Controlador y animación
   ui/             Título, archivo, pausa, mapa, modo lista
-  data/           projects.json, profile.json, rooms.json
+  data/           projects.json, profile.json, rooms.json (español) + en/ (traducción) + index.js
 art/              Fuentes (FBX, .blend, PSD, plantillas UV) — no se publican
   img/            Imágenes originales en alta (fuente de `npm run images`)
   rooms/          build_rooms.py (genera las seis salas) y los .blend de las salas
@@ -321,6 +349,21 @@ art/              Fuentes (FBX, .blend, PSD, plantillas UV) — no se publican
 - ~~¿Música propia o CC0?~~ Propia: compuesta en código y sintetizada en el navegador (Fase 6).
 
 ## 10. Registro de decisiones
+- **2026-10-10** — **Puertas más visibles**: el usuario notó que no se distinguían (hoja café oscuro
+  sobre lambrín oscuro). Se resolvió en código (`world/doorMarkers.js`) para todas las salas sin
+  regenerar los GLB: rendija de luz bajo la hoja, charco de luz aditivo en el piso (degradado en
+  escalones, estilo de la época) y brillo emisivo en `DOORFRAME_*`/`DOORKNOB_*`. La intensidad sube al
+  acercarse y late cuando la puerta es el objetivo de interacción (sin latido con movimiento reducido);
+  las salas sin modelo darían una luz roja tenue. `room.update(dt, posiciónJugador, objetivo)`. Se
+  añadió `clonePs1()` porque `Material.clone()` perdía los efectos PS1 (afectaba también a las portadas).
+- **2026-10-10** — Portafolio **bilingüe (español / inglés)**, a petición del usuario: la primera
+  visita muestra una pantalla de elección (bilingüe, con teclado, mando y táctil) y la elección se
+  guarda en `settings.lang`. El idioma se decide antes de construir la UI (`main.js` → diccionario →
+  `boot.js`, que es el antiguo `main.js`) y cambiarlo recarga la página en lugar de repintar en caliente.
+  Textos de la interfaz en `src/i18n/` con `t()`; traducción de los datos en `src/data/en/` aplicada
+  sobre el español (fuente única) por `src/data/index.js`. `?lang=en` en la URL fuerza el idioma (útil
+  para enviar a reclutadores: `?lang=en#lista`). Las fichas usan `whatIDo: true` en lugar de comparar el
+  texto del *kicker*. `npm run budget` cuenta ahora `boot.js` y el diccionario más pesado (787 kB).
 - **2026-10-09** — Fase 6: el usuario propuso usar una pista de un OST comercial con copyright; se
   descartó (riesgo de DMCA y contradice la regla de PI) y se compuso música **original** generada en el
   navegador: sin archivos (0 kB), sin costuras de bucle y nunca suena igual. Una sola pista continua en

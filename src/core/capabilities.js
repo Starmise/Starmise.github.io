@@ -1,3 +1,5 @@
+import { t } from './i18n.js';
+
 /**
  * Qué puede hacer este equipo, sin cargar Three.js (lo usa el arranque para decidir entre el
  * juego y el modo lista).
@@ -37,9 +39,9 @@ export function detectCapabilities() {
   caps.lowEnd = (memory > 0 && memory <= 2) || (cores > 0 && cores <= 2);
   caps.saveData = !!navigator.connection?.saveData;
 
-  if (caps.software) caps.reasons.push('el navegador dibuja el 3D sin aceleración gráfica');
-  if (caps.lowEnd) caps.reasons.push('el equipo tiene poca memoria o pocos núcleos');
-  if (caps.saveData) caps.reasons.push('tienes activado el ahorro de datos');
+  if (caps.software) caps.reasons.push(t('caps.software'));
+  if (caps.lowEnd) caps.reasons.push(t('caps.lowEnd'));
+  if (caps.saveData) caps.reasons.push(t('caps.saveData'));
   caps.slow = caps.webgl && caps.reasons.length > 0;
   return caps;
 }

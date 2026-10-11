@@ -71,6 +71,16 @@ export function applyPs1(material) {
   return material;
 }
 
+/**
+ * Copia un material PS1 conservando sus efectos. `Material.clone()` copia `userData` (la marca
+ * `ps1`) pero no `onBeforeCompile`, así que la copia se quedaría sin snapping ni mapeo afín.
+ */
+export function clonePs1(material) {
+  const copy = material.clone();
+  delete copy.userData.ps1;
+  return applyPs1(copy);
+}
+
 /** Texturas nítidas como en la consola: sin filtrado bilineal ni mipmaps. */
 export function makeTextureCrisp(texture) {
   if (!texture) return;

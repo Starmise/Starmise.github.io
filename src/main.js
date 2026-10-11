@@ -1,46 +1,26 @@
-import { caps, listView, closeList, wantsList } from './shell.js';
+import { presetLanguage, browserLanguage, loadLanguage } from './core/i18n.js';
+import { chooseLanguage } from './ui/languageScreen.js';
 
 /**
- * Arranque. Decide qué cargar antes de traer Three.js:
+ * Punto de entrada. Primero el idioma (todo lo demás se construye ya traducido):
  *
- *   - `#lista` en la URL      → modo lista (el juego se carga solo si se pulsa "Jugar en 3D")
- *   - sin WebGL 2             → modo lista con un aviso
- *   - en cualquier otro caso  → el juego (game.js, en su propio bloque de JS)
+ *   - `?lang=es|en` en la URL o el idioma guardado → directo
+ *   - la primera visita                            → pantalla de elección (ui/languageScreen.js)
  *
- * Las capacidades del equipo (y la sugerencia de modo lista en equipos lentos) están en
- * core/capabilities.js; el juego las usa en la pantalla de título.
+ * Luego boot.js decide entre el modo lista y el juego. El
+ * diccionario de cada idioma se descarga solo si se usa (src/i18n/).
  */
-
-let game = null;
-
-function startGame() {
-  game ??= import('./game.js')
-    .then(() => listView.setGameLoaded(true))
-    .catch((err) => {
-      console.error(err);
-      game = null;
-      listView.open({ notice: 'No se pudo cargar la versión 3D. Aquí tienes todo el portafolio.' });
-    });
-  return game;
+async function start() {
+  let code = presetLanguage();
+  if (!code) {
+    code = await chooseLanguage({ suggested: browserLanguage() });
+  }
+  await loadLanguage(code);
+  await import('./boot.js');
 }
 
-listView.onPlay = () => {
-  closeList();
-  startGame();
-};
-
-// Si se cierra el modo lista (p. ej. con "atrás") sin haber cargado el juego, cargarlo.
-listView.subscribe((open) => {
-  if (!open && caps.webgl) startGame();
+start().catch((err) => {
+  console.error(err);
+  document.getElementById('ui').textContent =
+    'No se pudo cargar el portafolio / The portfolio could not be loaded. Recarga la página / Please reload.';
 });
-
-if (!caps.webgl) {
-  history.replaceState(null, '', '#lista');
-  listView.open({
-    notice: 'Tu navegador no puede mostrar la versión 3D (necesita WebGL 2), así que aquí tienes todo el portafolio.',
-  });
-} else if (wantsList()) {
-  listView.open();
-} else {
-  startGame();
-}

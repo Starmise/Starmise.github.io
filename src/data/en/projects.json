@@ -1,0 +1,164 @@
+{
+  "persona-error": {
+    "tagline": "Psychological horror RPG — Global Game Jam 2026",
+    "tags": ["Unity", "Game Jam", "GGJ 2026", "VFX", "UI"],
+    "description": "Persona_ERROR is a psychological horror RPG about social pressure, the loss of identity and the masks we wear to fit in. The player wanders through an unsettling office inhabited by characters with monitors instead of faces.",
+    "process": "Built in Unity during the Global Game Jam 2026, so the whole game was made in a single weekend. I handled the visual effects, the user interface and the programming of the gameplay mechanics.",
+    "role": "Visual effects, UI and gameplay mechanics.",
+    "externalLabel": "Learn more and play the game!"
+  },
+  "epic-lucio-prototype": {
+    "tagline": "Third-person action prototype in Unreal Engine 5",
+    "tags": ["Unreal Engine 5", "Prototype", "UI", "Game Design", "Testing"],
+    "description": "Third-person action prototype built in Unreal Engine 5, with health and resource bars, an options menu with audio settings and a test level to validate the gameplay.",
+    "process": "Made in 2024 with Unreal Engine 5. I designed and implemented the interface (HUD and options menu), worked on the game design and tested the prototype.",
+    "role": "UI (HUD and menus), game design and testing."
+  },
+  "cosmic-fang": {
+    "tagline": "Top-down 2D shooter — Game a Week",
+    "tags": ["2D Shooter", "Top Down", "Game a Week", "Programming"],
+    "description": "A top-down 2D shooter where fanged animals and monsters chase the player. Every enemy the player takes down drops a fang, and fangs are the score.",
+    "process": "A prototype for my prototyping class, which followed the \"game a week\" format: as the name says, one game per week, each with a different theme. This week's theme was \"fang\". I did absolutely all of the player programming, plus the level design, UI design, animations, enemy AI and the game's music.",
+    "role": "All player programming, level design, UI design, animations, enemy AI and music.",
+    "externalLabel": "Learn more and play the game!"
+  },
+  "lucio-kart": {
+    "tagline": "Networked multiplayer kart racing",
+    "tags": ["Unity", "Multiplayer", "Photon PUN", "UI/UX"],
+    "description": "Lucio Kart is a kart racing game with networked multiplayer, where several players compete on the same track from different instances of the game.",
+    "process": "Built in Unity in 2024. I programmed the gameplay mechanics, integrated and tested networked multiplayer with Photon PUN, and designed the interface and user experience.",
+    "role": "Gameplay mechanics, multiplayer with Photon PUN (network testing) and UI/UX."
+  },
+  "3d-visualizer": {
+    "tagline": "Interactive real-time 3D viewer",
+    "tags": ["Unreal Engine 5", "Real-time rendering", "PBR materials"],
+    "description": "An interactive 3D viewer made in Unreal Engine 5 for inspecting models (such as clothing) in real time and changing their properties from an interface.",
+    "process": "Made in 2025 with Unreal Engine 5. I worked on the real-time rendering, the viewer's interactive features and the PBR material setup.",
+    "role": "Real-time rendering, interactive features and PBR materials."
+  },
+  "pops-and-barks": {
+    "tagline": "A chase between a dog and a bubble — Global Game Jam 2025",
+    "tags": ["Unity", "Game Jam", "GGJ 2025", "Game Design"],
+    "description": "Pops & Barks is a chase game between a dog and a bubble, playable right in the browser.",
+    "process": "Built in Unity during the Global Game Jam 2025, in a single weekend. I handled the game design, the programming of the mechanics and the testing.",
+    "role": "Game design, mechanics and testing.",
+    "externalLabel": "Learn more and play the game!"
+  },
+  "custom-2d-rendering-framework": {
+    "tagline": "Custom 2D framework in C++ with SFML and ImGui",
+    "tags": ["C++", "SFML", "ImGui", "Graphics programming"],
+    "description": "A custom 2D rendering framework written in C++ on top of SFML, with an actor hierarchy, ImGui interface tools and a debug notification system.",
+    "process": "A 2024 project in C++ and SFML. I implemented the 2D graphics pipeline, the actor hierarchy, the ImGui GUI tools and a custom debug notification system.",
+    "role": "2D graphics pipeline, actor hierarchy, ImGui tools and debug notifications."
+  },
+  "epic-lucio-mvp": {
+    "tagline": "The prototype grown up: real-time lighting and combat",
+    "tags": ["Unreal Engine 5", "Lighting", "Post-processing", "Retargeting"],
+    "description": "The MVP version of Epic Lucio in Unreal Engine 5: a third-person action game with real-time lit environments, post-processing, a navigation compass and combat effects.",
+    "process": "A 2025 Unreal Engine 5 project that continues Epic Lucio Prototype. I worked on the real-time lighting and post-processing, the game design and mechanics, and animation retargeting.",
+    "role": "Real-time lighting and post-processing, game design and mechanics, and animation retargeting."
+  },
+  "catharsis": {
+    "tagline": "RPG + Tycoon + Gacha",
+    "tags": ["RPG", "Tycoon", "Gacha", "3D level design"],
+    "description": "This game tries to blend the management loops of a Tycoon and a Gacha with a big RPG adventure. Each loop feeds into the others, and all of them are simplified for the players' comfort. On top of that, it tells a rather peculiar story in which you meet and interact with endearing and mysterious characters throughout your adventure.",
+    "process": "Catharsis was a long-term project made during the video game development degree at Universidad Cuauhtémoc Querétaro. It took 8 months and is the largest project I have worked on. My role was to support the level structure, turning hand-drawn sketches into playable 3D maps. I also modeled basic structures, tuned the random enemy spawn zones, added prompts and details to the maps, edited some promotional images for the game and helped with the inventory system.",
+    "role": "3D level structure and design, basic structure modeling, enemy spawn zones, promotional art and inventory system.",
+    "externalLabel": "Learn more and play the game!"
+  },
+  "solar-system-simulation": {
+    "tagline": "CPU rasterization with C++, Win32 and DXGI",
+    "tags": ["C++", "Win32", "DXGI", "Graphics programming"],
+    "description": "A 2D simulation of the solar system with planetary orbits, rendered through a custom CPU rasterization pipeline.",
+    "process": "A 2022 project in C++ with Win32 and DXGI. I implemented the CPU rasterizer, bitmap buffer management with DXGI, the orbital simulation using trigonometry and the image loading system.",
+    "role": "CPU rasterization, bitmap management with DXGI, orbital simulation and image loading."
+  },
+  "off-the-hook": {
+    "tagline": "First-person action: take down targets against the clock",
+    "tags": ["Unity", "Programming", "Game Design", "UI"],
+    "description": "Off The Hook is a first-person action game where the player aims at and takes down targets against the clock while moving through the level.",
+    "process": "Built in Unity in 2024. I handled the game programming, the game design and the user interface.",
+    "role": "Programming, game design and UI."
+  },
+  "deadlock-escape": {
+    "tagline": "Slide the cars to clear the way out",
+    "tags": ["Unity", "Puzzle", "Programming", "Puzzle design"],
+    "description": "Deadlock Escape is a puzzle game where the player slides cars around a parking lot to clear the path to the exit.",
+    "process": "Built in Unity in 2024. I handled the programming, the game design and the puzzle design.",
+    "role": "Programming, game design and puzzle design."
+  },
+  "lucio-clicker-simulator": {
+    "tagline": "Clicker simulator with eggs and pets on Roblox",
+    "tags": ["Roblox Studio", "Game Design", "3D modeling"],
+    "description": "A clicker-style simulator on Roblox where players collect coins, hatch eggs to get pets of different rarities and compete on a leaderboard.",
+    "process": "A 2025 project made in Roblox Studio. I handled the game design, the mechanics and the modeling of 3D assets.",
+    "role": "Game design, mechanics and 3D asset modeling."
+  },
+  "ar-foundation-vuforia": {
+    "tagline": "A collection of augmented reality apps",
+    "tags": ["Unity", "AR Foundation", "Vuforia", "XR", "Mobile apps"],
+    "description": "A collection of augmented reality apps: an interactive Xbox controller guide, a character card with a 3D model on top of an image (Koromaru) and an app for catching creatures anchored to the real world.",
+    "process": "2025 projects in Unity with AR Foundation and the Vuforia SDK. I integrated the SDKs and implemented image target recognition, plane detection, XR interaction, the app design, AR UI systems and real-world anchoring.",
+    "role": "SDK integration, image targets, plane detection, XR interaction, app design, AR UI and real-world anchoring."
+  },
+  "kiwi-procedural-agents": {
+    "tagline": "Procedural agents in a natural ecosystem — Tech lead",
+    "tags": ["Unity", "Tech lead", "AI", "Version control"],
+    "description": "A Unity simulation of procedural agents (kiwis) roaming a natural environment with rivers, bridges and vegetation.",
+    "process": "A 2025 Unity project where I was the team's tech lead. I implemented features, managed the version control workflows and handled debugging and testing across builds.",
+    "role": "Tech lead: feature implementation, version control workflows and debugging/testing across builds."
+  },
+  "raboom": {
+    "tagline": "An explosive miner bunny in round-based top-down action",
+    "tags": ["Top Down", "Action", "Enemy AI", "Animation"],
+    "description": "The game follows White Bun, a bunny who works as a miner and can create explosions. He blows up the enemies, minerals called Mr Mustache (which, for some reason, also look like cats), that he needs to extract to get his job done. But that's not all: the hero has to set off his explosions every so often, or he loses. It's a round-based game with a top-down view.",
+    "process": "Rab-boom was a prototype for my game design workshop class, developed over one month. I programmed the player movement and the enemy AI, built the animation trees for both the enemies and the player and hooked them up to the game's actions, and fixed some bugs with the map boundaries.",
+    "role": "Player movement, enemy AI, animation trees and map boundary fixes.",
+    "externalLabel": "Learn more and play the game!"
+  },
+  "kerberos-engine": {
+    "tagline": "Custom 3D rendering engine in C++ and DirectX 11",
+    "tags": ["C++", "DirectX 11", "Custom engine", "Graphics programming"],
+    "description": "Kerberos Engine is a custom 3D rendering engine written in C++ with DirectX 11, featuring model loading, actor management, dynamic shadows and an editor with transform panels.",
+    "process": "A 2025 project in C++ and DirectX 11. I developed the rendering engine, its graphics pipeline, the dynamic shadow mapping system, and model loading and actor management.",
+    "role": "Custom 3D engine, graphics pipeline, dynamic shadow mapping, model loading and actor management."
+  },
+  "lucio-galaxy": {
+    "tagline": "Gravity platformer in the style of Mario Galaxy",
+    "tags": ["Platformer", "Gravity physics", "Prototype"],
+    "description": "Lucio Galaxy is a game with Mario Galaxy-style gravity mechanics where the player must reach the end of the level before losing the platforms needed to get there.",
+    "process": "Lucio Galaxy is a prototype for my prototyping class, so it was developed in one week. This week's theme was \"running out of space\". I added some materials to the test build, included obstacles that restart the level when the player collides with them, and tweaked some gameplay details.",
+    "role": "Materials, obstacles that restart the level on collision and gameplay tweaks.",
+    "externalLabel": "Play the game!"
+  },
+  "pcg-enemies": {
+    "tagline": "Procedurally generated enemies driven by fitness functions",
+    "tags": ["Unity", "Procedural generation", "AI", "MVC"],
+    "description": "A system of procedurally generated enemies whose difficulty and balance are tuned through fitness functions with configurable weights.",
+    "process": "A 2025 project in Unity. I implemented the MVC architecture, the fitness functions and the random procedural generation of enemies.",
+    "role": "MVC architecture, fitness functions and procedural enemy generation."
+  },
+  "vessels": {
+    "tagline": "Third-person exploration in Unreal Engine 5",
+    "tags": ["Unreal Engine 5", "Programming", "Level design", "UI/UX"],
+    "description": "Vessels is a third-person exploration game in Unreal Engine 5, set in rocky, atmospheric environments.",
+    "process": "A 2024 project in Unreal Engine 5. I handled the programming, the interface and user experience, the game design and the level design.",
+    "role": "Programming, UI/UX, game design and level design."
+  },
+  "death-of-will": {
+    "tagline": "Round-based liminal horror FPS — solo development",
+    "tags": ["Unreal Engine 5", "Solo dev", "AI", "Shaders", "FPS"],
+    "description": "Death Of Will is a round-based liminal horror first-person shooter set in flooded, desolate spaces.",
+    "process": "A 2025 Unreal Engine 5 project developed entirely solo. I handled all of the design and implementation, including the AI systems, custom shaders, particles and PBR materials.",
+    "role": "Solo development: all design and implementation, AI systems, shaders, particles and PBR materials.",
+    "externalLabel": "Learn more and play the game!"
+  },
+  "memeception": {
+    "tagline": "Escape the memes — Global Game Jam 2024",
+    "tags": ["Game Jam", "GGJ 2024", "Platformer", "Shooter"],
+    "description": "Escape the memes! Run, use a grappling hook, slide along walls and dodge all kinds of memes. You're armed with a shotgun and face your pursuers, aiming to take down as many as you can. Put your survival skills to the test and rack up points for every meme you defeat before they catch you.",
+    "process": "Memeception was our project for the Global Game Jam 2024, with the theme \"Make me laugh\", so, as usual for a game jam, it was developed in just one weekend. I handled the player's basic movement, the grappling hook system used throughout the level, the wall-running ability and the handling of masks/layers for different objects.",
+    "role": "Player movement, grappling hook system, wall-running and mask/layer handling.",
+    "externalLabel": "Learn more and play the game!"
+  }
+}

@@ -31,6 +31,7 @@ export class RoomManager {
         baseUrl: this.baseUrl,
         resolve: this.resolve,
         doorLabel: (roomId) => this.defs.get(roomId)?.name ?? roomId,
+        doorAvailable: (roomId) => this.isAvailable(roomId),
         manager: this.manager,
       }).then((room) => {
         room.id = id;

@@ -1,9 +1,8 @@
 import * as THREE from 'three';
-import projects from './data/projects.json';
-import profile from './data/profile.json';
-import rooms from './data/rooms.json';
+import { projects, profile, rooms } from './data/index.js';
 import { Input } from './core/input.js';
 import { settings, setSetting, onSettingsChange } from './core/settings.js';
+import { t } from './core/i18n.js';
 import { reducedMotion, onReducedMotionChange } from './core/motion.js';
 import { PerfMonitor } from './core/perfMonitor.js';
 import { caps, listView, openList, closeList } from './shell.js';
@@ -56,7 +55,9 @@ scene.fog = new THREE.Fog(fogColor, 5, 15); // cada sala ajusta near/far con `fo
 const ambient = new THREE.HemisphereLight(0x8790a8, 0x1c140e, 0.75); // `ambient` de rooms.json
 scene.add(ambient);
 
-const transition = new DoorTransition(document.getElementById('fade'), document.getElementById('door-loading'));
+const doorLoading = document.getElementById('door-loading');
+doorLoading.textContent = t('common.loading');
+const transition = new DoorTransition(document.getElementById('fade'), doorLoading);
 transition.onCue = (cue) => audio.door(cue);
 
 const manager = new THREE.LoadingManager();
@@ -98,7 +99,7 @@ const title = new TitleScreen(uiRoot, stack, {
   onList: () => openList(),
 });
 if (caps.slow) {
-  title.setHint(`Puede que el 3D vaya lento en este equipo (${caps.reasons.join('; ')}). El modo lista carga al instante.`);
+  title.setHint(t('game.slowHint', { reasons: caps.reasons.join('; ') }));
 }
 const suggest = new SuggestDialog(uiRoot, stack);
 
@@ -163,7 +164,7 @@ manager.onProgress = (_url, loaded, total) => (targetProgress = loaded / Math.ma
 
 boot().catch((err) => {
   console.error(err);
-  title.setError('No se pudo cargar el portafolio. Prueba la versión clásica.');
+  title.setError(t('game.loadError'));
 });
 
 async function boot() {
@@ -220,7 +221,7 @@ async function goToRoom(id, fromId, mode = doorMode()) {
   if (transition.busy) return;
   if (!roomManager.isAvailable(id)) {
     audio.door('locked');
-    hud.flash('Está cerrada. Esta sala llegará pronto.');
+    hud.flash(t('game.locked'));
     return;
   }
   world.player.frozen = true;
@@ -233,7 +234,7 @@ async function goToRoom(id, fromId, mode = doorMode()) {
     hud.flash(world.room.def.name);
   } catch (err) {
     console.error(err);
-    hud.flash('No se pudo abrir la puerta.');
+    hud.flash(t('game.doorError'));
   } finally {
     transition.reveal();
     hud.setVisible(state === 'play');
@@ -282,9 +283,10 @@ function loop(time) {
       player.update(dt);
       director.update(player.position);
     }
-    world.room.update(dt); // pantallas animadas (siguen encendidas en pausa)
-
     const target = playing ? interaction.find(player) : null;
+    // Pantallas animadas (siguen encendidas en pausa) y brillo de las puertas según la cercanía.
+    world.room.update(dt, state === 'play' ? player.position : null, target);
+
     hud.setPrompt(target);
     touch.setTarget(target);
     if (target && input.consume('interact')) interact(target);
@@ -323,16 +325,16 @@ function updateStats(rawDt) {
 
 function suggestListMode(fps) {
   if (!settings.perfHint || listView.isOpen) return;
-  const tip = settings.ps1 ? '' : ' También ayuda volver a activar los efectos PS1 en Opciones (dibujan a menor resolución).';
+  const tip = settings.ps1 ? '' : ` ${t('game.slowTip')}`;
   suggest.open({
-    title: 'El juego va lento',
-    text: `Este equipo está dibujando unos ${Math.round(fps)} fps. El modo lista tiene todo el portafolio sin 3D y carga al instante.${tip}`,
-    confirm: 'Ver modo lista',
-    cancel: 'Seguir en 3D',
+    title: t('game.slowTitle'),
+    text: t('game.slowText', { fps: Math.round(fps) }) + tip,
+    confirm: t('game.slowConfirm'),
+    cancel: t('game.slowCancel'),
     onConfirm: () => openList(),
     onCancel: () => {
       setSetting('perfHint', false);
-      hud.flash('El modo lista sigue disponible en el menú (Mapa).', 3200);
+      hud.flash(t('game.listStillThere'), 3200);
     },
   });
 }
@@ -342,7 +344,7 @@ function hintPortrait() {
   if (portraitHinted || state !== 'play' || input.lastDevice !== 'touch') return;
   if (window.innerWidth >= window.innerHeight) return;
   portraitHinted = true;
-  hud.flash('Gira el teléfono: se juega mejor en horizontal.', 3500);
+  hud.flash(t('game.rotate'), 3500);
 }
 
 function handleGameActions() {
@@ -353,7 +355,7 @@ function handleGameActions() {
     world.debug = !world.debug;
     for (const h of world.room.helpers) h.visible = world.debug;
     hud.setStatus('');
-    hud.flash(world.debug ? 'Depuración: colisiones y triggers visibles' : 'Depuración: no');
+    hud.flash(t(world.debug ? 'game.debugOn' : 'game.debugOff'));
   }
 }
 

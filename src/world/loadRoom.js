@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { toPs1Material } from '../render/ps1Material.js';
+import { toPs1Material, clonePs1 } from '../render/ps1Material.js';
 import { CollisionWorld } from './collision.js';
 import { createVideoScreen } from './videoScreen.js';
+import { createDoorMarkers } from './doorMarkers.js';
 import { thumbUrl } from '../core/assets.js';
 
 /**
@@ -19,10 +20,12 @@ import { thumbUrl } from '../core/assets.js';
  *   SPAWN_<roomId>   → punto de aparición al llegar desde esa sala (SPAWN_default al inicio)
  *
  * `resolve(id)` traduce el id de un INT_ a { kind, label, verb?, project?, video?, document() } o null.
- * La sala devuelta tiene `update(dt)` para animar sus pantallas.
- * `doorLabel(roomId)` da el nombre visible de la sala de destino de una puerta.
+ * La sala devuelta tiene `update(dt, playerPosition, target)` para animar sus pantallas y las
+ * pistas de las puertas (world/doorMarkers.js).
+ * `doorLabel(roomId)` da el nombre visible de la sala de destino de una puerta y
+ * `doorAvailable(roomId)` si se puede abrir (las cerradas brillan en rojo).
  */
-export async function loadRoom(url, { resolve = () => null, doorLabel = (id) => id, baseUrl = './', manager } = {}) {
+export async function loadRoom(url, { resolve = () => null, doorLabel = (id) => id, doorAvailable = () => true, baseUrl = './', manager } = {}) {
   const gltf = await new GLTFLoader(manager).loadAsync(url);
   const root = gltf.scene;
   root.updateMatrixWorld(true);
@@ -37,8 +40,10 @@ export async function loadRoom(url, { resolve = () => null, doorLabel = (id) => 
     doorTexture: null,
     collision: null,
     animated: [], // { texture, update(dt) } — pantallas de video
-    update(dt) {
+    doorMarkers: null, // brillo de las puertas (world/doorMarkers.js)
+    update(dt, playerPosition = null, target = null) {
       for (const a of this.animated) a.update(dt);
+      this.doorMarkers?.update(dt, playerPosition, target);
     },
   };
 
@@ -129,7 +134,7 @@ export async function loadRoom(url, { resolve = () => null, doorLabel = (id) => 
       }
       it.object.traverse((o) => {
         if (o.isMesh && o.material?.name === 'MAT_Cover') {
-          o.material = o.material.clone();
+          o.material = clonePs1(o.material);
           o.material.map = tex;
           o.material.emissiveMap = tex;
           o.material.needsUpdate = true;
@@ -139,6 +144,7 @@ export async function loadRoom(url, { resolve = () => null, doorLabel = (id) => 
   );
 
   room.collision = new CollisionWorld(colliders);
+  room.doorMarkers = createDoorMarkers(room, { isAvailable: doorAvailable });
   return room;
 }
 

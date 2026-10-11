@@ -1,0 +1,47 @@
+{
+  "subtitle": "Montages and lighting guy",
+  "about": [
+    "I'd describe myself as a responsible, honest person with lots of enthusiasm, a real interest in learning new things and a passion for making video games. I'm always ready to take on new challenges that help me grow both professionally and personally.",
+    "I'm currently part of the new video game studio Little Blossom Studio, where I hope to keep creating projects that stand out and help us grow in the industry."
+  ],
+  "demoReel": {
+    "title": "Luis Rosaldo's DemoReel"
+  },
+  "skills": [
+    "Unity",
+    "Unreal Engine with Blueprints",
+    "C++ development",
+    "Basic modeling in Blender",
+    "Photoshop"
+  ],
+  "whatIDo": [
+    {
+      "text": "I've worked on many projects throughout my university studies, and I've also built several computer graphics tools using SFML and DirectX 11. I've also taken part in developing simulations with realistic physics, such as gravity in a solar system, buoyancy of complex objects and a walking system driven by procedural animation."
+    },
+    {
+      "text": "One of my hobbies is making Photoshop montages inspired by my favorite songs and artists. Today I have a complete collection of edits for every song on all 4 albums by the rock band Starset."
+    },
+    {
+      "text": "I have the knowledge and skills to build scenes in Blender from different models, applying photography principles to compose the final shot and using different lighting techniques to create striking environments."
+    }
+  ],
+  "trivia": {
+    "items": [
+      "I love listening to all kinds of music all the time: while I work, study, play, you name it.",
+      "My goal is to make a living as a Game Developer.",
+      "My favorite video games are Fallout 3, Persona 5 Royal and Marvel vs. Capcom 2."
+    ]
+  },
+  "contact": [
+    { "label": "Email" },
+    { "label": "LinkedIn" },
+    { "label": "Itch.io" },
+    { "label": "Instagram" },
+    { "label": "Starmise's social links" }
+  ],
+  "site": {
+    "title": "Starmise — Interactive portfolio",
+    "description": "Interactive portfolio of Luis Rosaldo (Starmise), Game Developer. Explore a mansion in the style of PS1 survival horror games and examine each project, or see everything in list mode.",
+    "imageAlt": "Title screen of the portfolio: «Starmise» over the hall of a low-poly PlayStation 1-style mansion."
+  }
+}

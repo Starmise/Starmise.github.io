@@ -1,12 +1,9 @@
 import { settings, setSetting } from '../core/settings.js';
 import { focusFirst } from './uiStack.js';
 import { PROFILE_DOCUMENTS, projectDocument, whatIDoDocument } from './documents.js';
+import { t, lang, LANGUAGES, changeLanguage, otherLanguage } from '../core/i18n.js';
 
-const TABS = [
-  { id: 'inventory', label: 'Inventario' },
-  { id: 'map', label: 'Mapa' },
-  { id: 'options', label: 'Opciones' },
-];
+const TABS = ['inventory', 'map', 'options'];
 
 /**
  * Menú de pausa: Inventario (habilidades y archivos personales), Mapa (salas y proyectos;
@@ -21,14 +18,14 @@ export class PauseMenu {
     this.el.className = 'pause';
     this.el.hidden = true;
     this.el.innerHTML = `
-      <div class="pause__panel" role="dialog" aria-modal="true" aria-label="Menú de pausa" tabindex="-1">
+      <div class="pause__panel" role="dialog" aria-modal="true" aria-label="${t('pause.aria')}" tabindex="-1">
         <header class="pause__head">
           <span class="pause__hint" aria-hidden="true">Q ◂</span>
           <div class="pause__tabs" role="tablist"></div>
           <span class="pause__hint" aria-hidden="true">▸ E</span>
         </header>
         <div class="pause__body"></div>
-        <footer class="pause__foot"><span data-hint></span><button type="button" class="pause__resume">Continuar</button></footer>
+        <footer class="pause__foot"><span data-hint></span><button type="button" class="pause__resume">${t('pause.resume')}</button></footer>
       </div>
     `;
     root.appendChild(this.el);
@@ -38,15 +35,15 @@ export class PauseMenu {
     this.hint = this.el.querySelector('[data-hint]');
     this.el.querySelector('.pause__resume').addEventListener('click', () => this.close());
 
-    for (const t of TABS) {
+    for (const id of TABS) {
       const b = document.createElement('button');
       b.type = 'button';
       b.role = 'tab';
       b.className = 'pause__tab';
-      b.dataset.tab = t.id;
+      b.dataset.tab = id;
       b.dataset.sfx = 'page';
-      b.textContent = t.label;
-      b.addEventListener('click', () => this.show(t.id));
+      b.textContent = t(`pause.tab.${id}`);
+      b.addEventListener('click', () => this.show(id));
       this.tabsEl.append(b);
     }
 
@@ -59,9 +56,9 @@ export class PauseMenu {
       onHide: () => (this.el.hidden = true),
       onAction: (action) => {
         if (action === 'tabPrev' || action === 'tabNext') {
-          const i = TABS.findIndex((t) => t.id === this.tab);
+          const i = TABS.indexOf(this.tab);
           const d = action === 'tabNext' ? 1 : -1;
-          this.show(TABS[(i + d + TABS.length) % TABS.length].id);
+          this.show(TABS[(i + d + TABS.length) % TABS.length]);
           return true;
         }
         if (action === 'pause') {
@@ -110,10 +107,8 @@ export class PauseMenu {
   }
 
   #renderHint() {
-    this.hint.textContent = {
-      gamepad: 'LB/RB pestañas · Ⓐ aceptar · Ⓑ volver',
-      touch: 'Toca una pestaña o una opción',
-    }[this.device] ?? 'Q/E pestañas · ↑↓ elegir · Enter aceptar · Esc volver';
+    const device = ['gamepad', 'touch'].includes(this.device) ? this.device : 'keyboard';
+    this.hint.textContent = t(`pause.hint.${device}`);
   }
 
   #build(tab) {
@@ -127,7 +122,7 @@ export class PauseMenu {
   #inventory() {
     const p = this.profile;
     const frag = document.createDocumentFragment();
-    frag.append(h('h2', 'Habilidades'));
+    frag.append(h('h2', t('pause.skills')));
     const grid = h('ul', null, 'inv-grid');
     p.skills.forEach((skill, i) => {
       const li = h('li', null, 'inv-slot');
@@ -136,7 +131,7 @@ export class PauseMenu {
     });
     frag.append(grid);
 
-    frag.append(h('h2', 'Archivos personales'));
+    frag.append(h('h2', t('pause.personal')));
     const list = h('div', null, 'pause__list');
     const docs = [
       PROFILE_DOCUMENTS.about(p),
@@ -146,7 +141,7 @@ export class PauseMenu {
       PROFILE_DOCUMENTS.contact(p),
     ];
     docs.forEach((doc, i) => {
-      const label = doc.kicker === 'Qué hago' ? `Qué hago — ${doc.title}` : doc.title;
+      const label = doc.whatIDo ? t('pause.whatIDoItem', { title: doc.title }) : doc.title;
       list.append(button(label, () => this.fileView.open(doc, { docs, index: i })));
     });
     frag.append(list);
@@ -158,7 +153,7 @@ export class PauseMenu {
   #map() {
     const frag = document.createDocumentFragment();
     const quick = h('div', null, 'pause__list map-quick');
-    quick.append(button('Ver todo el portafolio en modo lista (sin 3D)', () => this.onList()));
+    quick.append(button(t('pause.mapList'), () => this.onList()));
     frag.append(quick);
     const current = this.getCurrentRoom();
     for (const room of this.rooms) {
@@ -166,9 +161,9 @@ export class PauseMenu {
       const head = h('div', null, 'map-room__head');
       const title = h('h2', room.name);
       head.append(title);
-      if (room.id === current) head.append(h('span', 'Estás aquí', 'map-room__here'));
-      else if (room.model) head.append(button('Ir', () => this.onTravel(room.id), 'map-room__go', `Ir a ${room.name}`));
-      else head.append(h('span', 'Próximamente', 'map-room__soon'));
+      if (room.id === current) head.append(h('span', t('pause.here'), 'map-room__here'));
+      else if (room.model) head.append(button(t('pause.go'), () => this.onTravel(room.id), 'map-room__go', t('pause.goAria', { room: room.name })));
+      else head.append(h('span', t('pause.soon'), 'map-room__soon'));
       block.append(head);
       if (room.description) block.append(h('p', room.description, 'map-room__desc'));
 
@@ -201,25 +196,27 @@ export class PauseMenu {
   #options() {
     const frag = document.createDocumentFragment();
     const rows = h('div', null, 'opt-list');
+    const yesNo = [[true, t('common.yes')], [false, t('common.no')]];
     rows.append(
-      toggleRow('Controles', 'mode', [['modern', 'Modernos'], ['tank', 'Clásicos (tanque)']]),
-      toggleRow('Efectos PS1', 'ps1', [[true, 'Sí'], [false, 'No']]),
-      toggleRow('Animación de puertas', 'doorAnim', [['full', 'Completa'], ['short', 'Rápida']]),
-      toggleRow('Movimiento', 'motion', [['auto', 'Del sistema'], ['reduce', 'Reducido'], ['full', 'Completo']],
-        'Reducido: sin temblor de polígonos, puertas con fundido y sin parpadeos.'),
-      toggleRow('Controles táctiles', 'touch', [['auto', 'Automático'], ['on', 'Siempre'], ['off', 'Nunca']]),
-      toggleRow('Sugerir modo lista si va lento', 'perfHint', [[true, 'Sí'], [false, 'No']]),
-      toggleRow('Sonido', 'sound', [[true, 'Sí'], [false, 'No']],
-        'Música y efectos originales, sintetizados en el navegador.'),
-      sliderRow('Volumen general', 'volume'),
-      sliderRow('Música', 'music'),
-      sliderRow('Efectos', 'sfx', 'Pasos, puertas, ambiente de cada sala y menús.'),
+      languageRow(),
+      toggleRow(t('opt.controls'), 'mode', [['modern', t('opt.modern')], ['tank', t('opt.tank')]]),
+      toggleRow(t('opt.ps1'), 'ps1', yesNo),
+      toggleRow(t('opt.doorAnim'), 'doorAnim', [['full', t('opt.doorFull')], ['short', t('opt.doorShort')]]),
+      toggleRow(t('opt.motion'), 'motion',
+        [['auto', t('opt.motionAuto')], ['reduce', t('opt.motionReduce')], ['full', t('opt.motionFull')]],
+        t('opt.motionNote')),
+      toggleRow(t('opt.touch'), 'touch', [['auto', t('opt.touchAuto')], ['on', t('opt.touchOn')], ['off', t('opt.touchOff')]]),
+      toggleRow(t('opt.perfHint'), 'perfHint', yesNo),
+      toggleRow(t('opt.sound'), 'sound', yesNo, t('opt.soundNote')),
+      sliderRow(t('opt.volume'), 'volume'),
+      sliderRow(t('opt.music'), 'music'),
+      sliderRow(t('opt.sfx'), 'sfx', t('opt.sfxNote')),
     );
     frag.append(rows);
 
-    frag.append(h('h2', 'Controles'));
+    frag.append(h('h2', t('pause.controls')));
     const table = h('dl', null, 'controls-list');
-    for (const [action, key, pad] of CONTROLS) {
+    for (const [action, key, pad] of t('pause.controlsList')) {
       table.append(h('dt', action), h('dd', `${key}  ·  ${pad}`));
     }
     frag.append(table);
@@ -230,23 +227,25 @@ export class PauseMenu {
     classic.href = this.profile.classicSite;
     classic.target = '_blank';
     classic.rel = 'noopener';
-    classic.textContent = 'Versión clásica del portafolio ↗';
-    links.append(button('Modo lista (todo el portafolio, sin 3D)', () => this.onList()), classic, button('Volver al título', () => this.onTitle()));
+    classic.textContent = t('pause.classic');
+    links.append(button(t('pause.list'), () => this.onList()), classic, button(t('pause.toTitle'), () => this.onTitle()));
     frag.append(links);
     return frag;
   }
 }
 
-const CONTROLS = [
-  ['Mover', 'WASD / flechas', 'stick izq. / cruceta'],
-  ['Correr', 'Shift', 'X / □ / RB'],
-  ['Examinar / abrir', 'E / Enter', 'A / ✕'],
-  ['Menú', 'Esc / Tab', 'Start'],
-  ['Mapa · Inventario', 'M · I', 'Select'],
-  ['Pestañas / fichas', 'Q · E', 'LB · RB'],
-  ['Giro rápido (clásicos)', 'atrás + Shift', 'atrás + X'],
-  ['Pantalla táctil', 'joystick a la izquierda (al borde, corre)', 'botón de acción · ☰ menú'],
-];
+/** Idioma: cambiarlo recarga la página (vuelve al título) con el otro idioma. */
+function languageRow() {
+  const row = h('div', null, 'opt-row');
+  const labelEl = h('span', t('opt.language'), 'opt-row__label');
+  labelEl.append(h('small', t('opt.languageNote'), 'opt-row__note'));
+  row.append(labelEl);
+  const name = LANGUAGES.find((l) => l.code === lang())?.name ?? lang();
+  const b = button(`◂ ${name} ▸`, () => changeLanguage(otherLanguage().code), 'opt-row__value');
+  b.setAttribute('aria-label', t('opt.aria', { label: t('opt.language'), value: name }));
+  row.append(b);
+  return row;
+}
 
 function toggleRow(label, key, options, note) {
   const row = h('div', null, 'opt-row');
@@ -259,7 +258,7 @@ function toggleRow(label, key, options, note) {
   const paint = () => {
     const i = options.findIndex(([v]) => v === settings[key]);
     b.textContent = `◂ ${options[i]?.[1] ?? options[0][1]} ▸`;
-    b.setAttribute('aria-label', `${label}: ${options[i]?.[1] ?? options[0][1]}. Pulsa para cambiar.`);
+    b.setAttribute('aria-label', t('opt.aria', { label, value: options[i]?.[1] ?? options[0][1] }));
   };
   b.addEventListener('click', () => {
     const i = options.findIndex(([v]) => v === settings[key]);

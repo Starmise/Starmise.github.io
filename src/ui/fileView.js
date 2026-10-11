@@ -1,4 +1,5 @@
 import { thumbUrl, youtubeEmbed } from '../core/assets.js';
+import { t } from '../core/i18n.js';
 
 /**
  * "Archivo": un documento mecanografiado sobre la escena (ficha de proyecto, diario,
@@ -31,11 +32,11 @@ export class FileView {
         <figure class="file-doc__cover" data-f="figure"><img data-f="image" alt="" /></figure>
         <div class="file-doc__video" data-f="video"></div>
         <div data-f="sections"></div>
-        <ul class="file-doc__gallery" data-f="gallery" aria-label="Galería"></ul>
-        <ul class="file-doc__tags" data-f="tags" aria-label="Etiquetas"></ul>
+        <ul class="file-doc__gallery" data-f="gallery" aria-label="${t('file.gallery')}"></ul>
+        <ul class="file-doc__tags" data-f="tags" aria-label="${t('file.tags')}"></ul>
         <div class="file-doc__links" data-f="links"></div>
         <footer class="file-doc__foot">
-          <button type="button" class="file-doc__close" data-f="close">Cerrar</button>
+          <button type="button" class="file-doc__close" data-f="close">${t('file.close')}</button>
         </footer>
       </article>
     `;
@@ -136,12 +137,12 @@ export class FileView {
     const play = el('button');
     play.type = 'button';
     play.className = 'file-doc__play';
-    play.setAttribute('aria-label', `Reproducir: ${title}`);
+    play.setAttribute('aria-label', t('file.playAria', { title }));
     const poster = el('img');
     poster.src = /^https?:/.test(video.poster) ? video.poster : this.baseUrl + video.poster;
     poster.alt = '';
     poster.addEventListener('error', () => poster.remove());
-    play.append(poster, el('span', '▶ Reproducir', null, 'file-doc__play-label'));
+    play.append(poster, el('span', t('file.play'), null, 'file-doc__play-label'));
     play.addEventListener('click', () => {
       const frame = el('iframe');
       frame.src = youtubeEmbed(video);
@@ -189,7 +190,7 @@ export class FileView {
         a.href = this.baseUrl + src;
         a.target = '_blank';
         a.rel = 'noopener';
-        a.setAttribute('aria-label', `Imagen ${i + 1} de ${doc.title} (se abre en otra pestaña)`);
+        a.setAttribute('aria-label', t('file.imageAria', { n: i + 1, title: doc.title }));
         const img = el('img');
         img.src = this.baseUrl + thumbUrl(src);
         img.alt = '';
@@ -221,9 +222,9 @@ export class FileView {
     const seq = this.sequence;
     if (seq && seq.docs.length > 1) {
       f.nav.innerHTML = `
-        <button type="button" class="file-doc__step" data-step="-1" data-sfx="page" aria-label="Archivo anterior">◂<span class="file-doc__keys"> Q/LB</span></button>
+        <button type="button" class="file-doc__step" data-step="-1" data-sfx="page" aria-label="${t('file.prev')}">◂<span class="file-doc__keys"> Q/LB</span></button>
         <span>${seq.index + 1} / ${seq.docs.length}</span>
-        <button type="button" class="file-doc__step" data-step="1" data-sfx="page" aria-label="Archivo siguiente"><span class="file-doc__keys">E/RB </span>▸</button>`;
+        <button type="button" class="file-doc__step" data-step="1" data-sfx="page" aria-label="${t('file.next')}"><span class="file-doc__keys">E/RB </span>▸</button>`;
     } else {
       f.nav.replaceChildren();
     }

@@ -1,0 +1,26 @@
+{
+  "hall": {
+    "name": "Main Hall",
+    "description": "Display case with the featured projects, the diary and the DemoReel."
+  },
+  "unreal-wing": {
+    "name": "Unreal Wing",
+    "description": "Gallery of projects made in Unreal Engine."
+  },
+  "unity-wing": {
+    "name": "Unity Wing",
+    "description": "Study with the projects made in Unity."
+  },
+  "lab": {
+    "name": "Laboratory",
+    "description": "Engines and graphics in C++."
+  },
+  "game-room": {
+    "name": "Game Room",
+    "description": "Game jams and prototypes, on arcade cabinets."
+  },
+  "save-room": {
+    "name": "Save Room",
+    "description": "Contact and trivia."
+  }
+}

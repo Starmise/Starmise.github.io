@@ -1,4 +1,5 @@
 import { settings, onSettingsChange } from '../core/settings.js';
+import { t } from '../core/i18n.js';
 
 const RADIUS = 52; // px: recorrido del joystick
 const DEADZONE = 0.14;
@@ -29,10 +30,10 @@ export class TouchControls {
         <div class="touch__stick"><div class="touch__knob"></div></div>
       </div>
       <div class="touch__top">
-        <button type="button" class="touch__btn" data-act="map">Mapa</button>
-        <button type="button" class="touch__btn" data-act="pause" aria-label="Menú">☰</button>
+        <button type="button" class="touch__btn" data-act="map">${t('touch.map')}</button>
+        <button type="button" class="touch__btn" data-act="pause" aria-label="${t('touch.menu')}">☰</button>
       </div>
-      <button type="button" class="touch__btn touch__btn--act is-idle" data-act="interact">Examinar</button>
+      <button type="button" class="touch__btn touch__btn--act is-idle" data-act="interact">${t('hud.examine')}</button>
     `;
     root.append(this.el);
     this.zone = this.el.querySelector('.touch__zone');
@@ -66,10 +67,10 @@ export class TouchControls {
 
   /** Objeto al alcance (o null): cambia el texto del botón de acción. */
   setTarget(target) {
-    const verb = target ? (target.verb ?? (target.kind === 'door' ? 'Abrir' : 'Examinar')) : 'Examinar';
+    const verb = target ? (target.verb ?? t(target.kind === 'door' ? 'hud.open' : 'hud.examine')) : t('hud.examine');
     if (this.actBtn.textContent !== verb) this.actBtn.textContent = verb;
     this.actBtn.classList.toggle('is-idle', !target);
-    this.actBtn.setAttribute('aria-label', target ? `${verb}: ${target.label ?? ''}` : 'Nada que examinar');
+    this.actBtn.setAttribute('aria-label', target ? `${verb}: ${target.label ?? ''}` : t('touch.nothing'));
   }
 
   #paint() {

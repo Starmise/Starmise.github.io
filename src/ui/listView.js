@@ -1,5 +1,6 @@
 import { thumbUrl, youtubeEmbed, youtubeThumb } from '../core/assets.js';
 import { reducedMotion } from '../core/motion.js';
+import { t, changeLanguage, otherLanguage } from '../core/i18n.js';
 
 /**
  * Modo lista: todo el portafolio como una página HTML normal (sin 3D), con los mismos datos
@@ -55,7 +56,7 @@ export class ListView {
     this.el.hidden = false;
     this.#setInert(true);
     this.savedTitle = document.title;
-    document.title = `${this.profile.alias} — Portafolio (modo lista)`;
+    document.title = t('list.docTitle', { alias: this.profile.alias });
     this.el.scrollTop = 0;
     this.el.focus({ preventScroll: true });
   }
@@ -95,7 +96,7 @@ export class ListView {
 
   #paintPlay() {
     this.playBtn.hidden = !this.webgl;
-    this.playBtn.textContent = this.gameLoaded ? '◂ Volver al juego' : '▶ Jugar en 3D';
+    this.playBtn.textContent = t(this.gameLoaded ? 'list.back' : 'list.play');
   }
 
   #setInert(on) {
@@ -114,15 +115,19 @@ export class ListView {
   #header() {
     const p = this.profile;
     const featured = this.projects.filter((x) => x.featured).length;
+    const other = otherLanguage();
+    const langBtn = h('button', { type: 'button', class: 'lm-btn lm-btn--lang', lang: other.code, title: other.switchLabel }, other.name);
+    langBtn.addEventListener('click', () => changeLanguage(other.code));
     return h('header', { class: 'lm-head' },
       h('div', { class: 'lm-head__id' },
         h('p', { class: 'lm-head__alias', 'aria-hidden': 'true' }, p.alias),
         h('h1', { class: 'lm-head__name' }, `${p.name} `, h('span', {}, `· ${p.title}`)),
-        h('p', { class: 'lm-head__count' }, `${this.projects.length} archivos · ${featured} destacados · versión sin 3D`),
+        h('p', { class: 'lm-head__count' }, t('list.count', { n: this.projects.length, featured })),
       ),
       h('div', { class: 'lm-head__actions' },
-        h('button', { type: 'button', class: 'lm-btn lm-btn--primary', 'data-act': 'play' }, '▶ Jugar en 3D'),
-        h('a', { class: 'lm-btn', href: p.classicSite, target: '_blank', rel: 'noopener' }, 'Versión clásica ↗'),
+        h('button', { type: 'button', class: 'lm-btn lm-btn--primary', 'data-act': 'play' }, t('list.play')),
+        h('a', { class: 'lm-btn', href: p.classicSite, target: '_blank', rel: 'noopener' }, t('list.classic')),
+        langBtn,
       ),
       h('p', { class: 'lm-notice', role: 'status', hidden: '' }),
     );
@@ -136,13 +141,13 @@ export class ListView {
 
   #toc() {
     const links = [
-      ['lm-about', 'Sobre mí'],
-      ['lm-featured', 'Destacados'],
+      ['lm-about', t('list.about')],
+      ['lm-featured', t('list.featured')],
       ...this.#projectRooms().map(({ room }) => [`lm-room-${room.id}`, room.name]),
-      ['lm-skills', 'Habilidades'],
-      ['lm-contact', 'Contacto'],
+      ['lm-skills', t('list.skills')],
+      ['lm-contact', t('list.contact')],
     ];
-    return h('nav', { class: 'lm-toc', 'aria-label': 'Secciones' },
+    return h('nav', { class: 'lm-toc', 'aria-label': t('list.sections') },
       h('ul', {}, ...links.map(([id, label]) => h('li', {}, h('a', { href: `#${id}` }, label)))),
     );
   }
@@ -167,15 +172,15 @@ export class ListView {
     const body = h('div', { class: 'lm-about' },
       h('div', { class: 'lm-about__text' },
         ...p.about.map((t) => h('p', {}, t)),
-        p.studio && h('p', { class: 'lm-about__studio' }, h('strong', {}, 'Estudio actual: '), p.studio.name),
+        p.studio && h('p', { class: 'lm-about__studio' }, h('strong', {}, t('list.studio')), p.studio.name),
       ),
       p.demoReel && h('figure', { class: 'lm-about__reel' },
         h('div', { class: 'lm-video' }, this.#videoButton()),
         h('figcaption', {}, p.demoReel.title, ' · ',
-          h('a', { href: `https://www.youtube.com/watch?v=${p.demoReel.youtubeId}`, target: '_blank', rel: 'noopener' }, 'Ver en YouTube ↗')),
+          h('a', { href: `https://www.youtube.com/watch?v=${p.demoReel.youtubeId}`, target: '_blank', rel: 'noopener' }, t('list.youtube'))),
       ),
     );
-    return this.#section('lm-about', 'Sobre mí', body);
+    return this.#section('lm-about', t('list.about'), body);
   }
 
   #videoButton() {
@@ -183,9 +188,9 @@ export class ListView {
     const poster = reel.thumbnail ?? youtubeThumb(reel.youtubeId);
     const img = h('img', { src: this.#url(poster), alt: '', loading: 'lazy' });
     img.addEventListener('error', () => img.remove()); // sin miniatura: queda el fondo negro
-    const btn = h('button', { type: 'button', class: 'lm-video__play', 'aria-label': `Reproducir: ${reel.title}` },
+    const btn = h('button', { type: 'button', class: 'lm-video__play', 'aria-label': t('file.playAria', { title: reel.title }) },
       img,
-      h('span', { class: 'lm-video__label' }, '▶ Reproducir'),
+      h('span', { class: 'lm-video__label' }, t('file.play')),
     );
     btn.addEventListener('click', () => {
       const frame = h('iframe', {
@@ -212,7 +217,7 @@ export class ListView {
         ),
       )),
     );
-    return this.#section('lm-featured', 'Destacados', list);
+    return this.#section('lm-featured', t('list.featured'), list);
   }
 
   #roomSection(room, items) {
@@ -227,8 +232,8 @@ export class ListView {
     const index = this.projects.indexOf(p);
     const id = `lm-p-${p.id}`;
     const details = [
-      ['Descripción', p.description],
-      ['Proceso', p.process],
+      [t('doc.description'), p.description],
+      [t('doc.process'), p.process],
     ].filter(([, text]) => text);
     return h('article', { class: 'lm-card', id, 'aria-labelledby': `${id}-h` },
       h('img', {
@@ -236,40 +241,40 @@ export class ListView {
         src: this.#url(thumbUrl(p.cover)),
         srcset: `${this.#url(thumbUrl(p.cover))} 256w, ${this.#url(p.cover)} 1280w`,
         sizes: '(max-width: 700px) 92vw, 340px',
-        alt: `Portada de ${p.title}`,
+        alt: t('doc.coverAlt', { title: p.title }),
         loading: 'lazy',
         decoding: 'async',
       }),
       h('div', { class: 'lm-card__body' },
         h('p', { class: 'lm-card__kicker' },
-          `Archivo Nº ${String(index + 1).padStart(3, '0')}`,
-          p.featured && h('span', { class: 'lm-card__star' }, '★ Destacado'),
+          t('doc.fileNo', { n: String(index + 1).padStart(3, '0') }),
+          p.featured && h('span', { class: 'lm-card__star' }, t('list.featuredBadge')),
         ),
         h('h3', { id: `${id}-h`, tabindex: '-1' }, p.title),
         p.tagline && h('p', { class: 'lm-card__tagline' }, p.tagline),
-        p.role && h('p', { class: 'lm-card__role' }, h('strong', {}, 'Mi rol: '), p.role),
-        p.tags?.length && h('ul', { class: 'lm-tags', 'aria-label': 'Etiquetas' }, ...p.tags.map((t) => h('li', {}, t))),
+        p.role && h('p', { class: 'lm-card__role' }, h('strong', {}, t('list.role')), p.role),
+        p.tags?.length && h('ul', { class: 'lm-tags', 'aria-label': t('file.tags') }, ...p.tags.map((tag) => h('li', {}, tag))),
         details.length && h('details', { class: 'lm-card__more' },
-          h('summary', {}, 'Leer ficha completa'),
+          h('summary', {}, t('list.readMore')),
           ...details.flatMap(([heading, text]) => [h('h4', {}, heading), h('p', {}, text)]),
-          p.gallery?.length && h('ul', { class: 'lm-gallery', 'aria-label': 'Galería' },
+          p.gallery?.length && h('ul', { class: 'lm-gallery', 'aria-label': t('file.gallery') },
             ...p.gallery.map((src, i) => h('li', {},
-              h('a', { href: this.#url(src), target: '_blank', rel: 'noopener', 'aria-label': `Imagen ${i + 1} de ${p.title} (se abre en otra pestaña)` },
+              h('a', { href: this.#url(src), target: '_blank', rel: 'noopener', 'aria-label': t('file.imageAria', { n: i + 1, title: p.title }) },
                 h('img', { src: this.#url(thumbUrl(src)), alt: '', loading: 'lazy' })),
             )),
           ),
         ),
         p.externalLink && h('a', { class: 'lm-card__link', href: p.externalLink, target: '_blank', rel: 'noopener' },
-          `${p.externalLabel || 'Ver proyecto'} ↗`),
+          `${p.externalLabel || t('doc.viewProject')} ↗`),
       ),
     );
   }
 
   #skills() {
     const p = this.profile;
-    return this.#section('lm-skills', 'Habilidades',
+    return this.#section('lm-skills', t('list.skills'),
       h('ul', { class: 'lm-skills' }, ...p.skills.map((s) => h('li', {}, s))),
-      p.whatIDo?.length && h('h3', { class: 'lm-subhead' }, 'Qué hago'),
+      p.whatIDo?.length && h('h3', { class: 'lm-subhead' }, t('list.whatIDo')),
       p.whatIDo?.length && h('div', { class: 'lm-whatido' },
         ...p.whatIDo.map((w) => h('article', { class: 'lm-whatido__item' },
           w.image && h('img', { src: this.#url(thumbUrl(w.image)), alt: '', loading: 'lazy' }),
@@ -282,11 +287,11 @@ export class ListView {
   #trivia() {
     const items = this.profile.trivia?.items ?? [];
     if (!items.length) return '';
-    return this.#section('lm-trivia', 'Curiosidades', h('ul', { class: 'lm-trivia' }, ...items.map((t) => h('li', {}, t))));
+    return this.#section('lm-trivia', t('list.trivia'), h('ul', { class: 'lm-trivia' }, ...items.map((item) => h('li', {}, item))));
   }
 
   #contact() {
-    return this.#section('lm-contact', 'Contacto',
+    return this.#section('lm-contact', t('list.contact'),
       h('ul', { class: 'lm-contact' },
         ...this.profile.contact.map((c) => {
           const external = !c.url.startsWith('mailto:');
@@ -299,7 +304,7 @@ export class ListView {
 
   #footer() {
     return h('footer', { class: 'lm-foot' },
-      h('p', {}, `${this.profile.alias} · ${this.profile.name} · Proyecto original inspirado en los survival horror de los 90.`),
+      h('p', {}, `${this.profile.alias} · ${this.profile.name} · ${t('common.legal')}`),
     );
   }
 

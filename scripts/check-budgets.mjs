@@ -64,11 +64,20 @@ const html = readFileSync(join(DIST, 'index.html'));
 const entryFiles = [...html.toString().matchAll(/(?:src|href)="\.?\/?(assets\/[^"]+)"/g)].map((m) => m[1]);
 const assets = readdirSync(join(DIST, 'assets'));
 const gameChunk = assets.find((f) => /^game-.*\.js$/.test(f));
+const bootChunk = assets.find((f) => /^boot-.*\.js$/.test(f));
 const gz = (file) => gzipSync(readFileSync(join(DIST, file))).length;
+// Diccionario del idioma (src/i18n/): se descarga uno; se cuenta el más pesado (inglés, que
+// trae también la traducción de los datos).
+const langChunk = assets
+  .filter((f) => /^(es|en)-.*\.js$/.test(f))
+  .map((f) => [`assets/${f} (idioma)`, gz(`assets/${f}`)])
+  .sort((a, b) => b[1] - a[1])[0];
 
 const lines = [
   ['index.html', gzipSync(html).length],
   ...entryFiles.map((f) => [f, gz(f)]),
+  ...(langChunk ? [langChunk] : []),
+  ...(bootChunk ? [[`assets/${bootChunk}`, gz(`assets/${bootChunk}`)]] : []),
 ];
 const listOnly = lines.reduce((sum, [, b]) => sum + b, 0);
 if (gameChunk) lines.push([`assets/${gameChunk}`, gz(`assets/${gameChunk}`)]);

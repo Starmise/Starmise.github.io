@@ -5,6 +5,7 @@
 const KEY = 'starmise.settings';
 
 const DEFAULTS = {
+  lang: null, // 'es' | 'en'; null = aún no se ha elegido (se pregunta al inicio, ver core/i18n.js)
   mode: 'modern', // 'modern' | 'tank'
   ps1: true, // efectos PS1 (resolución, temblor, dithering)
   doorAnim: 'full', // 'full' | 'short' (con movimiento reducido siempre es 'short')
@@ -18,6 +19,7 @@ const DEFAULTS = {
 };
 
 const CHOICES = {
+  lang: [null, 'es', 'en'],
   mode: ['modern', 'tank'],
   doorAnim: ['full', 'short'],
   motion: ['auto', 'reduce', 'full'],

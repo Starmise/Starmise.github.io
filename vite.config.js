@@ -35,6 +35,7 @@ function siteMeta() {
           meta({ property: 'og:type', content: 'website' }),
           meta({ property: 'og:site_name', content: profile.alias }),
           meta({ property: 'og:locale', content: 'es_MX' }),
+          meta({ property: 'og:locale:alternate', content: 'en_US' }),
           meta({ property: 'og:title', content: site.title }),
           meta({ property: 'og:description', content: site.description }),
           meta({ property: 'og:url', content: site.url }),

@@ -1,6 +1,4 @@
-import projects from './data/projects.json';
-import profile from './data/profile.json';
-import rooms from './data/rooms.json';
+import { projects, profile, rooms } from './data/index.js';
 import { detectCapabilities } from './core/capabilities.js';
 import { ListView } from './ui/listView.js';
 
@@ -12,6 +10,10 @@ import { ListView } from './ui/listView.js';
  * navegador (o en el móvil) vuelve al juego.
  */
 export const caps = detectCapabilities();
+
+// Título y descripción de la página en el idioma elegido (el HTML trae los de español).
+document.title = profile.site?.title ?? document.title;
+if (profile.site?.description) document.querySelector('meta[name="description"]')?.setAttribute('content', profile.site.description);
 
 export const listView = new ListView(document.body, {
   projects,

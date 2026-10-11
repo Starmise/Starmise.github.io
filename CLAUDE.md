@@ -1,7 +1,8 @@
 # CLAUDE.md — Contexto del proyecto
 
 Portafolio **interactivo en 3D** de **Starmise** (Luis Rosaldo), desarrollador de videojuegos.
-Todo el contenido y la comunicación con el usuario son **en español**.
+La comunicación con el usuario es **en español**. El portafolio es **bilingüe (español / inglés)**:
+el español es la fuente de todo el texto y el inglés se añade encima (ver "Idiomas" abajo).
 
 > **Este es el repositorio activo del portafolio.** El repo anterior
 > (`Starmise/About-Me-Website`, estética *Persona 5*) queda **solo como referencia de
@@ -57,7 +58,9 @@ título con carga, menú de pausa (inventario, mapa, opciones), fichas navegable
 soporte de mando y táctil, **modo lista** (HTML sin 3D; `#lista` en la URL), sugerencia de modo lista en
 equipos lentos, movimiento reducido, **audio original** (música continua "Nocturno de la mansión",
 ambiente por sala, pasos según el suelo, puertas y menús; todo sintetizado, sin archivos) y meta tags /
-Open Graph / favicon. **Pendiente (TODO del usuario):** textura final del personaje y
+Open Graph / favicon. Es **bilingüe**: la primera visita pregunta el idioma (Español / English) y se
+recuerda; se cambia desde el título, Opciones o el modo lista, o con `?lang=en|es` en la URL.
+**Pendiente (TODO del usuario):** textura final del personaje y
 exportar `player.glb` desde Blender con `Idle`/`Walk`/`Run` (PLAN.md §5) — el actual es **provisional**
 (solo `Walk`); imágenes finales de los proyectos e imágenes reales para `profile.gallery` (hoy
 `GalleryExample*`); comprobar 60 fps con F3 en un portátil medio; probar en Firefox, Safari y un
@@ -104,7 +107,8 @@ public/            Se copia tal cual a dist/
   og-image.jpg     Vista previa de enlaces 1200×630 (captura del título)
   manifest.webmanifest  Nombre, colores e iconos para "añadir a la pantalla de inicio"
 src/
-  main.js          Arranque ligero: #lista o sin WebGL → modo lista; si no, importa game.js
+  main.js          Entrada: decide el idioma (URL, guardado o pantalla de elección) y carga boot.js
+  boot.js          Arranque ligero: #lista o sin WebGL → modo lista; si no, importa game.js
   shell.js         Compartido arranque/juego sin Three.js: capacidades del equipo y modo lista (#lista)
   game.js          El juego y su bucle: título, salas, transiciones, interacción, pausa
   style.css        HUD, título, menú de pausa, fichas "Archivo", táctil y modo lista
@@ -116,7 +120,8 @@ src/
   audio/uiSounds.js  Sonidos de menús conectados a la UiStack y a los clics (`data-sfx`)
   audio/dsp.js     Utilidades de síntesis (PRNG, biquad, ruidos, reverberación)
   core/input.js    Teclado + mando (Gamepad API) + táctil: acciones de juego y de menú
-  core/settings.js Opciones del jugador (localStorage) con suscripción a cambios
+  core/settings.js Opciones del jugador (localStorage) con suscripción a cambios (incluye `lang`)
+  core/i18n.js     Idioma: t('clave'), carga del diccionario, cambiar idioma (recarga), localizeData()
   core/motion.js   Movimiento reducido (sistema u opción) → clase reduce-motion
   core/capabilities.js  WebGL 2, render por software, poca memoria, ahorro de datos
   core/perfMonitor.js   FPS jugando; avisa si el equipo va lento
@@ -130,6 +135,8 @@ src/
   world/cameraDirector.js  Cámara activa según TRG_CAM_* (con histéresis)
   world/interaction.js   Qué INT_/DOOR_ está al alcance y de frente
   world/doorTransition.js  Animación de puerta / fundido que oculta la carga
+  world/doorMarkers.js   Pistas visuales de las puertas: rendija de luz, charco en el piso, marco que brilla
+                         (más al acercarse; late cuando es la que se abriría; rojo si la sala está cerrada)
   player/loadPlayer.js   Carga el GLB del personaje, materiales PS1, quita root motion horizontal
   player/playerController.js  Movimiento (moderno/tanque, analógico), colisión, animación, TUNING
   ui/uiStack.js    Pila de capas de UI y navegación (teclado/mando)
@@ -141,12 +148,16 @@ src/
   ui/listView.js   Modo lista: todo el portafolio en HTML accesible (sin Three.js)
   ui/touchControls.js  Joystick virtual y botones en pantalla
   ui/suggestDialog.js  Diálogo de dos opciones (sugerir el modo lista)
+  ui/languageScreen.js Pantalla bilingüe de elección de idioma (primera visita)
+  i18n/es.js, en.js  Textos de la interfaz por idioma (mismas claves); en.js trae también data/en/
   data/
+    index.js       Exporta projects/profile/rooms ya en el idioma activo (usar esto, no los JSON)
     projects.json  FUENTE ÚNICA de los proyectos (22, con su sala en `room`)
     profile.json   Bio, estudio, DemoReel, habilidades, "qué hago", curiosidades, galería, contacto
     rooms.json     Salas: nombre, descripción, GLB (null = aún no construida), niebla, luz ambiente y
                    sonido (ambience, floor, reverb, mood)
-    README.md      Esquema de los JSON y script de validación
+    en/            Traducción al inglés: solo los textos (projects por id, rooms por id, profile parcial)
+    README.md      Esquema de los JSON, de la traducción y scripts de validación
 art/character/     Fuentes del personaje (no se publican)
   PSX_Char_Male_Base.fbx            Personaje PS1 (19 huesos, caminata de Mixamo, sin textura)
   PSX_Char_Male_UV_1024.png         Plantilla de UVs para pintar la textura
@@ -167,6 +178,8 @@ La estructura objetivo (con `public/`, `art/`, etc.) está en `PLAN.md` §7.
   heredados del original (aún no se muestran en el juego).
 - Imágenes: el original va en `art/img/`, se corre `npm run images` y el JSON usa `img/<nombre>.webp`.
   La miniatura (`img/thumb/<nombre>.webp`) se deriva sola con `thumbUrl()`.
+- Para copiar un material de una sala usar `clonePs1()` (render/ps1Material.js), no `.clone()`: Three.js no
+  copia `onBeforeCompile` y la copia perdería el snapping y el mapeo afín.
 - Con el *vertex snapping*, dos superficies a pocos cm "pelean" en profundidad. Por eso el cascarón de
   cada sala (`Room_Shell*`) se dibuja con *polygon offset*; para objetos pegados entre sí (que no sean
   el cascarón), separarlos ≥3 cm.
@@ -185,11 +198,19 @@ La estructura objetivo (con `public/`, `art/`, etc.) está en `PLAN.md` §7.
   Google Fonts no carga desde ahí; no es un error del proyecto.
 - Tras cambiar `package.json` (p. ej. al añadir `sharp`), correr `npm install` en Windows antes de
   `npm run dev`.
-- El modo lista se enlaza directo con `…/#lista` (útil para reclutadores). Cualquier texto nuevo del
-  portafolio va en `src/data/` y aparece solo en el juego y en el modo lista.
+- El modo lista se enlaza directo con `…/#lista` (útil para reclutadores; en inglés:
+  `…/?lang=en#lista`). Cualquier texto nuevo del portafolio va en `src/data/` y aparece solo en el
+  juego y en el modo lista.
+- **Idiomas.** Ningún texto visible se escribe en el código: la interfaz usa `t('clave')` con las claves
+  de `src/i18n/es.js` y `en.js` (añadir siempre en los dos), y los datos se importan de
+  `src/data/index.js` (no de los JSON directamente). Al cambiar un texto de `src/data/*.json`, actualizar
+  su traducción en `src/data/en/` (README de datos). El idioma se elige **antes** de construir la UI y
+  cambiarlo recarga la página (vuelve al título): no hay repintado en caliente. Para probar en inglés
+  sin la pantalla de elección: `?lang=en` (o `localStorage['starmise.settings'] = '{"lang":"en"}'`).
+  En pruebas automáticas, sin `lang` guardado aparece primero la pantalla de idioma (hay que elegir).
 - En la nube, Chromium dibuja por software: el título muestra el aviso de "equipo lento" y a los ~10 s
   de juego aparece la sugerencia de modo lista. Para pruebas, guardar
-  `localStorage['starmise.settings'] = '{"perfHint":false}'` antes de cargar. Como el render es lento y
+  `localStorage['starmise.settings'] = '{"perfHint":false,"lang":"es"}'` antes de cargar. Como el render es lento y
   el paso de tiempo se limita a 1/20 s, en la nube todo (puertas, pasos) va "a cámara lenta".
 - Audio: no hay archivos de sonido; todo se sintetiza (`src/audio/`, PLAN.md §6.5). El contexto de audio
   no existe hasta el primer gesto, así que en pruebas automáticas hay que pulsar una tecla o tocar antes

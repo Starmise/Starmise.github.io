@@ -1,10 +1,11 @@
 import { focusFirst } from './uiStack.js';
 import { settings, setSetting, onSettingsChange } from '../core/settings.js';
+import { t, lang, LANGUAGES, changeLanguage, otherLanguage } from '../core/i18n.js';
 
 /**
  * Pantalla de carga + título. Mientras cargan los modelos muestra una barra de progreso;
- * cuando termina, "Pulsa Start" y luego el menú: Empezar, Modo lista, Controles, Versión
- * clásica. La sala de inicio se ve detrás, oscurecida. El modo lista se puede abrir ya
+ * cuando termina, "Pulsa Start" y luego el menú: Empezar, Modo lista, Controles, Sonido,
+ * Idioma (recarga la página en el otro idioma) y Versión clásica. La sala de inicio se ve detrás, oscurecida. El modo lista se puede abrir ya
  * durante la carga. `setHint()` muestra un aviso bajo el menú (p. ej. equipo lento).
  *
  * El audio arranca con el primer gesto (normalmente "Pulsa Enter", que suena a campana).
@@ -26,36 +27,33 @@ export class TitleScreen {
         <p class="title__sub">${escapeHtml(profile.name)} · ${escapeHtml(profile.title)}</p>
 
         <div class="title__loading" data-stage="loading">
-          <div class="title__bar" role="progressbar" aria-label="Cargando" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
-          <p class="title__loading-text">Cargando…</p>
-          <button type="button" class="title__skip" data-act="list">¿Con prisa? Ver en modo lista</button>
+          <div class="title__bar" role="progressbar" aria-label="${t('title.loadingAria')}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+          <p class="title__loading-text">${t('common.loading')}</p>
+          <button type="button" class="title__skip" data-act="list">${t('title.skip')}</button>
         </div>
 
-        <button type="button" class="title__press" data-stage="press" data-start data-sfx="start">Pulsa <kbd>Enter</kbd></button>
+        <button type="button" class="title__press" data-stage="press" data-start data-sfx="start">${t('title.press', { key: 'Enter' })}</button>
 
-        <nav class="title__menu" data-stage="menu" aria-label="Menú principal">
-          <button type="button" data-act="start">Empezar</button>
-          <button type="button" data-act="list">Modo lista <small>(sin 3D)</small></button>
-          <button type="button" data-act="controls">Controles</button>
+        <nav class="title__menu" data-stage="menu" aria-label="${t('title.menuAria')}">
+          <button type="button" data-act="start">${t('title.start')}</button>
+          <button type="button" data-act="list">${t('title.list')} <small>${t('title.listNote')}</small></button>
+          <button type="button" data-act="controls">${t('title.controls')}</button>
           <button type="button" data-act="sound" data-sound></button>
-          <a href="${escapeHtml(profile.classicSite)}" target="_blank" rel="noopener">Versión clásica ↗</a>
+          <button type="button" data-act="language">${escapeHtml(t('title.language', { name: languageName(lang()) }))}</button>
+          <a href="${escapeHtml(profile.classicSite)}" target="_blank" rel="noopener">${t('title.classic')}</a>
         </nav>
 
         <div class="title__controls" data-stage="controls">
           <dl>
-            <dt>Mover</dt><dd>WASD / flechas · stick izquierdo</dd>
-            <dt>Correr</dt><dd>Shift · X / □</dd>
-            <dt>Examinar, abrir puertas</dt><dd>E / Enter · A / ✕</dd>
-            <dt>Menú (inventario, mapa, opciones)</dt><dd>Esc · Start</dd>
-            <dt>Pantalla táctil</dt><dd>Joystick a la izquierda (al borde, corre) · botón de acción · ☰ menú</dd>
+            ${t('title.controlsList').map(([action, keys]) => `<dt>${action}</dt><dd>${keys}</dd>`).join('')}
           </dl>
-          <p>Los controles clásicos tipo tanque se activan en <em>Opciones</em>.</p>
-          <button type="button" data-act="back">Volver</button>
+          <p>${t('title.tankNote')}</p>
+          <button type="button" data-act="back">${t('common.back')}</button>
         </div>
 
         <p class="title__hint" role="status" hidden></p>
       </div>
-      <p class="title__legal">Proyecto original inspirado en los survival horror de los 90.</p>
+      <p class="title__legal">${t('common.legal')}</p>
     `;
     root.appendChild(this.el);
     this.inner = this.el.querySelector('.title__inner');
@@ -73,6 +71,7 @@ export class TitleScreen {
       else if (act === 'list') this.onList?.();
       else if (act === 'controls') this.#setStage('controls');
       else if (act === 'sound') setSetting('sound', !settings.sound);
+      else if (act === 'language') changeLanguage(otherLanguage().code);
       else if (act === 'back') this.#setStage('menu');
     });
 
@@ -115,8 +114,8 @@ export class TitleScreen {
   }
 
   setDevice(device) {
-    if (device === 'touch') this.startLabel.textContent = 'Toca para empezar';
-    else this.startLabel.innerHTML = `Pulsa <kbd>${device === 'gamepad' ? 'Start' : 'Enter'}</kbd>`;
+    if (device === 'touch') this.startLabel.textContent = t('title.tap');
+    else this.startLabel.innerHTML = t('title.press', { key: device === 'gamepad' ? 'Start' : 'Enter' });
   }
 
   /** Aviso bajo el menú (vacío = ocultarlo). */
@@ -138,7 +137,7 @@ export class TitleScreen {
   }
 
   #paintSound() {
-    this.soundBtn.textContent = `Sonido: ${settings.sound ? 'Sí' : 'No'}`;
+    this.soundBtn.textContent = t('title.sound', { value: t(settings.sound ? 'common.yes' : 'common.no') });
   }
 
   #setStage(stage) {
@@ -149,6 +148,10 @@ export class TitleScreen {
     else if (stage === 'controls') focusFirst(this.el.querySelector('.title__controls'));
     else this.inner.focus({ preventScroll: true });
   }
+}
+
+function languageName(code) {
+  return LANGUAGES.find((l) => l.code === code)?.name ?? code;
 }
 
 function escapeHtml(s) {

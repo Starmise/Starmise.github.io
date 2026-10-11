@@ -1,4 +1,5 @@
 import { focusFirst } from './uiStack.js';
+import { t } from '../core/i18n.js';
 
 /**
  * Diálogo breve con dos opciones (capa de la UiStack: pausa el juego, se navega con teclado,
@@ -46,7 +47,7 @@ export class SuggestDialog {
     };
   }
 
-  open({ title, text, confirm = 'Aceptar', cancel = 'Cancelar', onConfirm = null, onCancel = null }) {
+  open({ title, text, confirm = t('common.accept'), cancel = t('common.cancel'), onConfirm = null, onCancel = null }) {
     this.handlers = { confirm: onConfirm, cancel: onCancel };
     this.el.querySelector('.suggest__title').textContent = title;
     this.el.querySelector('.suggest__text').textContent = text;

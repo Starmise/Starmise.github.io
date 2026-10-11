@@ -1,7 +1,11 @@
 # Datos del portafolio
 
-Toda la información del portafolio vive en estos dos JSON. La escena 3D y cualquier vista
-alternativa deben **leer de aquí** en lugar de tener textos escritos a mano en el código.
+Toda la información del portafolio vive en estos JSON. La escena 3D y cualquier vista
+alternativa deben **leer de aquí** (a través de `index.js`, que aplica el idioma elegido) en
+lugar de tener textos escritos a mano en el código.
+
+El **español** (los JSON de esta carpeta) es la fuente única. La traducción al **inglés** vive en
+`en/` y solo trae los textos (ver [Traducción al inglés](#traducción-al-inglés)).
 
 - `projects.json` — los proyectos (copiado del portafolio original `About-Me-Website`).
 - `rooms.json` — salas del juego: `id`, `name`, `description`, `model` (GLB en `public/`,
@@ -72,4 +76,29 @@ documento del perfil: `about` (diario/bio), `contact` (máquina de escribir), `t
 
 ```bash
 node -e "const p=require('./src/data/projects.json'),f=require('./src/data/profile.json'),fs=require('fs');const r=[...p.flatMap(x=>[x.cover,...(x.gallery||[])]),f.logo,f.studio.icon,...f.whatIDo.map(w=>w.image),f.trivia.image,...f.gallery];console.log('faltantes:',r.filter(x=>!fs.existsSync('public/'+x)))"
+```
+
+4. Si cambiaste textos, actualiza también su traducción en `en/` (abajo).
+
+## Traducción al inglés
+
+El portafolio pregunta el idioma la primera vez (Español / English); se cambia después desde el
+título, Opciones o el modo lista, y se puede forzar con `?lang=en` o `?lang=es` en la URL
+(p. ej. `https://starmise.github.io/?lang=en#lista` para un reclutador que no hable español).
+
+`en/` tiene un archivo por JSON, **solo con los campos traducidos**; lo que falte se muestra en
+español. Las imágenes, enlaces, ids y números no se repiten:
+
+| Archivo            | Forma |
+|--------------------|-------|
+| `en/projects.json` | Objeto `{ "<id del proyecto>": { tagline, tags, description, process, role, externalLabel } }`. También acepta `title` si algún día cambia el nombre. |
+| `en/rooms.json`    | Objeto `{ "<id de la sala>": { name, description } }`. |
+| `en/profile.json`  | Mismo esqueleto que `profile.json`, solo con los textos. Las listas de textos (`about`, `skills`, `trivia.items`) se reemplazan completas; las de objetos (`whatIDo`, `contact`) se combinan **por posición**, así que basta `{ "label": "Email" }` en el mismo orden (o `{}` si no cambia). |
+
+Los textos de la interfaz (botones, menús, avisos) no están aquí sino en `src/i18n/es.js` y
+`src/i18n/en.js` (mismas claves en ambos). Con `npm run dev` en inglés, la consola avisa de los
+proyectos o salas sin traducir. Para comprobarlo a mano:
+
+```bash
+node -e "const p=require('./src/data/projects.json'),e=require('./src/data/en/projects.json'),r=require('./src/data/rooms.json'),er=require('./src/data/en/rooms.json');console.log('sin traducir:',[...p.filter(x=>!e[x.id]).map(x=>x.id),...r.filter(x=>!er[x.id]).map(x=>'sala '+x.id)])"
 ```
