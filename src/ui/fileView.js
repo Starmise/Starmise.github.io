@@ -1,5 +1,7 @@
 import { thumbUrl, youtubeEmbed } from '../core/assets.js';
 import { t } from '../core/i18n.js';
+import { onSwipe } from './swipe.js';
+import { ImageViewer } from './imageViewer.js';
 
 /**
  * "Archivo": un documento mecanografiado sobre la escena (ficha de proyecto, diario,
@@ -9,6 +11,10 @@ import { t } from '../core/i18n.js';
  *
  * Los videos (doc.video) muestran primero su miniatura; el reproductor de YouTube solo se
  * incrusta al pulsar "Reproducir" y se quita al cambiar de documento o cerrar.
+ *
+ * Móvil: la barra de arriba (número de archivo, ◂ n/m ▸ y ✕) queda fija mientras el texto se
+ * desplaza; deslizar la ficha a los lados pasa de archivo; la galería se abre en un visor
+ * (ui/imageViewer.js) sin salir del juego. En pantallas bajas la ficha ocupa toda la pantalla.
  */
 export class FileView {
   constructor(root, stack, { baseUrl = './', onMedia = null } = {}) {
@@ -24,8 +30,13 @@ export class FileView {
     this.el.innerHTML = `
       <div class="file-view__backdrop"></div>
       <article class="file-doc" role="dialog" aria-modal="true" aria-labelledby="file-title" tabindex="-1">
+        <div class="file-doc__bar">
+          <p class="file-doc__kicker" data-f="kicker"></p>
+          <span class="file-doc__nav" data-f="nav"></span>
+          <button type="button" class="file-doc__x" data-f="x" aria-label="${t('file.closeAria')}">✕</button>
+        </div>
+        <div class="file-doc__body" data-f="body" tabindex="-1">
         <header class="file-doc__head">
-          <p class="file-doc__kicker"><span data-f="kicker"></span><span class="file-doc__nav" data-f="nav"></span></p>
           <h2 id="file-title" class="file-doc__title" data-f="title"></h2>
           <p class="file-doc__tagline" data-f="tagline"></p>
         </header>
@@ -38,12 +49,29 @@ export class FileView {
         <footer class="file-doc__foot">
           <button type="button" class="file-doc__close" data-f="close">${t('file.close')}</button>
         </footer>
+        </div>
       </article>
     `;
     root.appendChild(this.el);
     this.doc = this.el.querySelector('.file-doc');
     this.f = Object.fromEntries([...this.el.querySelectorAll('[data-f]')].map((n) => [n.dataset.f, n]));
+    this.body = this.f.body; // lo que se desplaza (la barra de arriba no)
     this.f.close.addEventListener('click', () => this.close());
+    this.f.x.addEventListener('click', () => this.close());
+    this.viewer = new ImageViewer(root, stack);
+    this.f.gallery.addEventListener('click', (e) => {
+      const a = e.target.closest('a[data-i]');
+      if (!a || e.ctrlKey || e.metaKey || e.shiftKey || e.button > 0) return; // abrir en pestaña sigue funcionando
+      e.preventDefault();
+      this.viewer.open(this.galleryUrls, Number(a.dataset.i), this.f.title.textContent);
+    });
+    // Deslizar la ficha a los lados = archivo anterior / siguiente (si hay lista que recorrer).
+    onSwipe(this.doc, (dir) => this.sequence?.docs.length > 1 && this.#step(dir, true), {
+      onDrag: (dx) => {
+        if (!(this.sequence?.docs.length > 1)) return;
+        this.body.style.transform = dx ? `translateX(${Math.max(-60, Math.min(60, dx * 0.3))}px)` : '';
+      },
+    });
     // Anterior/siguiente con ratón o toque (además de Q/E y LB/RB).
     this.f.nav.addEventListener('click', (e) => {
       const step = e.target.closest('[data-step]')?.dataset.step;
@@ -57,7 +85,7 @@ export class FileView {
         this.el.hidden = false;
         requestAnimationFrame(() => {
           this.el.classList.add('is-open');
-          this.doc.focus({ preventScroll: true });
+          this.body.focus({ preventScroll: true });
         });
       },
       onHide: () => {
@@ -84,7 +112,7 @@ export class FileView {
     this.sequence = sequence;
     this.#render(doc);
     if (!this.isOpen) this.stack.push(this.layer);
-    else this.doc.focus({ preventScroll: true });
+    else this.body.focus({ preventScroll: true });
   }
 
   close() {
@@ -96,8 +124,8 @@ export class FileView {
       case 'up':
       case 'down':
         // Si el foco está en un enlace/botón, navegar; si no, desplazar el texto.
-        if (document.activeElement === this.doc) {
-          this.doc.scrollBy({ top: action === 'down' ? 80 : -80 });
+        if (document.activeElement === this.doc || document.activeElement === this.body) {
+          this.body.scrollBy({ top: action === 'down' ? 80 : -80 });
           return true;
         }
         return false;
@@ -115,11 +143,16 @@ export class FileView {
     }
   }
 
-  #step(delta) {
+  #step(delta, swiped = false) {
     const seq = this.sequence;
     seq.index = (seq.index + delta + seq.docs.length) % seq.docs.length;
     this.#render(seq.docs[seq.index]);
-    this.doc.focus({ preventScroll: true });
+    this.body.focus({ preventScroll: true });
+    // Entra desde el lado hacia el que se pasó (con el dedo o con ◂ ▸).
+    this.body.classList.remove('is-from-left', 'is-from-right');
+    void this.body.offsetWidth;
+    this.body.classList.add(delta > 0 ? 'is-from-right' : 'is-from-left');
+    if (swiped) this.stack.onSound?.('page');
     return true;
   }
 
@@ -158,6 +191,7 @@ export class FileView {
   #render(doc) {
     const { f } = this;
     f.kicker.textContent = doc.kicker ?? '';
+    this.body.style.transform = '';
     f.title.textContent = doc.title;
     f.tagline.textContent = doc.tagline ?? '';
     f.tagline.hidden = !doc.tagline;
@@ -184,10 +218,12 @@ export class FileView {
       }),
     );
 
+    this.galleryUrls = (doc.gallery ?? []).map((src) => this.baseUrl + src);
     f.gallery.replaceChildren(
       ...(doc.gallery ?? []).map((src, i) => {
         const a = el('a');
         a.href = this.baseUrl + src;
+        a.dataset.i = i;
         a.target = '_blank';
         a.rel = 'noopener';
         a.setAttribute('aria-label', t('file.imageAria', { n: i + 1, title: doc.title }));
@@ -228,7 +264,7 @@ export class FileView {
     } else {
       f.nav.replaceChildren();
     }
-    this.doc.scrollTop = 0;
+    this.body.scrollTop = 0;
   }
 }
 

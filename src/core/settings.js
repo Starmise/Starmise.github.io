@@ -11,6 +11,9 @@ const DEFAULTS = {
   doorAnim: 'full', // 'full' | 'short' (con movimiento reducido siempre es 'short')
   motion: 'auto', // 'auto' (según el sistema) | 'reduce' | 'full' — ver core/motion.js
   touch: 'auto', // controles táctiles: 'auto' (al tocar la pantalla) | 'on' | 'off'
+  touchSize: 'normal', // tamaño del joystick y los botones en pantalla: 'normal' | 'large'
+  touchSide: 'left', // lado del joystick: 'left' | 'right' (los botones van al otro lado)
+  haptics: true, // vibración breve al correr y al examinar (solo teléfonos que la admiten)
   perfHint: true, // sugerir el modo lista si el juego va lento
   sound: true, // interruptor general del audio (no pierde los volúmenes)
   volume: 0.8, // volumen general 0..1
@@ -24,6 +27,8 @@ const CHOICES = {
   doorAnim: ['full', 'short'],
   motion: ['auto', 'reduce', 'full'],
   touch: ['auto', 'on', 'off'],
+  touchSize: ['normal', 'large'],
+  touchSide: ['left', 'right'],
 };
 
 const listeners = new Set();

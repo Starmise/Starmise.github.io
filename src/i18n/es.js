@@ -54,7 +54,18 @@ export const strings = {
     ['Correr', 'Shift · X / □'],
     ['Examinar, abrir puertas', 'E / Enter · A / ✕'],
     ['Menú (inventario, mapa, opciones)', 'Esc · Start'],
-    ['Pantalla táctil', 'Joystick a la izquierda (al borde, corre) · botón de acción · ☰ menú'],
+    ['Pantalla táctil', 'Joystick (más allá del aro, corre) · botón de acción o toca el objeto · ☰ menú'],
+  ],
+  'title.fullscreen': 'Pantalla completa',
+  // Controles en pantalla táctil (título y Opciones, cuando se juega tocando). {side}: lado del joystick.
+  'controls.touch': [
+    ['Mover', 'Apoya el pulgar a la {side} y arrástralo'],
+    ['Correr', 'Saca el dedo más allá del aro (se pone rojo)'],
+    ['Examinar, abrir', 'Botón de acción, o toca el objeto o la puerta'],
+    ['Menú · Mapa', '☰ y Mapa, arriba a la derecha'],
+    ['Pasar de archivo', 'Desliza la ficha a los lados'],
+    ['Volver, cerrar', 'Atrás del teléfono, ✕ o tocar fuera'],
+    ['Saltar la puerta', 'Toca la pantalla'],
   ],
 
   // HUD y táctil
@@ -67,6 +78,9 @@ export const strings = {
   'touch.map': 'Mapa',
   'touch.menu': 'Menú',
   'touch.nothing': 'Nada que examinar',
+  'touch.fullscreen': 'Pantalla completa',
+  'touch.exitFullscreen': 'Salir de pantalla completa',
+  'touch.tooFar': 'Acércate más: {label}',
 
   // Menú de pausa
   'pause.aria': 'Menú de pausa',
@@ -75,7 +89,7 @@ export const strings = {
   'pause.tab.options': 'Opciones',
   'pause.resume': 'Continuar',
   'pause.hint.gamepad': 'LB/RB pestañas · Ⓐ aceptar · Ⓑ volver',
-  'pause.hint.touch': 'Toca una pestaña o una opción',
+  'pause.hint.touch': 'Toca una opción · desliza para cambiar de pestaña',
   'pause.hint.keyboard': 'Q/E pestañas · ↑↓ elegir · Enter aceptar · Esc volver',
   'pause.skills': 'Habilidades',
   'pause.personal': 'Archivos personales',
@@ -97,7 +111,7 @@ export const strings = {
     ['Mapa · Inventario', 'M · I', 'Select'],
     ['Pestañas / fichas', 'Q · E', 'LB · RB'],
     ['Giro rápido (clásicos)', 'atrás + Shift', 'atrás + X'],
-    ['Pantalla táctil', 'joystick a la izquierda (al borde, corre)', 'botón de acción · ☰ menú'],
+    ['Pantalla táctil', 'joystick (más allá del aro, corre)', 'botón de acción o tocar el objeto · ☰ menú'],
   ],
 
   // Opciones
@@ -120,6 +134,15 @@ export const strings = {
   'opt.touchAuto': 'Automático',
   'opt.touchOn': 'Siempre',
   'opt.touchOff': 'Nunca',
+  'opt.touchSize': 'Tamaño de los controles',
+  'opt.touchSizeNormal': 'Normal',
+  'opt.touchSizeLarge': 'Grandes',
+  'opt.touchSide': 'Joystick',
+  'opt.touchSideLeft': 'izquierda',
+  'opt.touchSideRight': 'derecha',
+  'opt.touchSideNote': 'El botón de acción va al lado contrario.',
+  'opt.haptics': 'Vibración',
+  'opt.hapticsNote': 'Breve, al correr y al examinar.',
   'opt.perfHint': 'Sugerir modo lista si va lento',
   'opt.sound': 'Sonido',
   'opt.soundNote': 'Música y efectos originales, sintetizados en el navegador.',
@@ -134,7 +157,13 @@ export const strings = {
   'file.close': 'Cerrar',
   'file.play': '▶ Reproducir',
   'file.playAria': 'Reproducir: {title}',
-  'file.imageAria': 'Imagen {n} de {title} (se abre en otra pestaña)',
+  'file.imageAria': 'Imagen {n} de {title}',
+  'file.closeAria': 'Cerrar archivo',
+  'viewer.aria': 'Imagen {n} de {total}: {title}',
+  'viewer.close': 'Cerrar imagen',
+  'viewer.prev': 'Imagen anterior',
+  'viewer.next': 'Imagen siguiente',
+  'viewer.open': 'Abrir original ↗',
   'file.prev': 'Archivo anterior',
   'file.next': 'Archivo siguiente',
 

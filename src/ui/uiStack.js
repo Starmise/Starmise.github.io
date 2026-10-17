@@ -23,6 +23,7 @@ export class UiStack {
     this.layers = [];
     this.onChange = null; // (isOpen) => void
     this.onSound = null; // (nombre) => void
+    this.onLayers = null; // () => void, tras cada push/pop (ui/backGuard.js)
 
     // Teclado en los menús. Tab y Enter/Espacio los maneja el navegador de forma nativa.
     window.addEventListener('keydown', (e) => {
@@ -49,6 +50,7 @@ export class UiStack {
     layer.onShow?.();
     this.#layerSound(layer, 'open');
     if (this.layers.length === 1) this.onChange?.(true);
+    this.onLayers?.();
   }
 
   pop(layer = this.top) {
@@ -63,6 +65,7 @@ export class UiStack {
     if (back?.isConnected && back.getClientRects?.().length && !back.closest('[hidden]')) back.focus?.({ preventScroll: true });
     else if (this.top) focusFirst(this.top.el);
     if (!this.layers.length) this.onChange?.(false);
+    this.onLayers?.();
   }
 
   clear() {

@@ -5,12 +5,13 @@ import { settings, setSetting, onSettingsChange } from './core/settings.js';
 import { t } from './core/i18n.js';
 import { reducedMotion, onReducedMotionChange } from './core/motion.js';
 import { PerfMonitor } from './core/perfMonitor.js';
+import { haptic } from './core/haptics.js';
 import { caps, listView, openList, closeList } from './shell.js';
 import { Ps1Renderer } from './render/ps1Renderer.js';
 import { RoomManager } from './world/roomManager.js';
 import { CameraDirector } from './world/cameraDirector.js';
 import { DoorTransition } from './world/doorTransition.js';
-import { Interaction } from './world/interaction.js';
+import { Interaction, TOUCH_ASSIST } from './world/interaction.js';
 import { loadPlayer } from './player/loadPlayer.js';
 import { PlayerController } from './player/playerController.js';
 import { UiStack } from './ui/uiStack.js';
@@ -20,6 +21,7 @@ import { TitleScreen } from './ui/titleScreen.js';
 import { Hud } from './ui/hud.js';
 import { TouchControls } from './ui/touchControls.js';
 import { SuggestDialog } from './ui/suggestDialog.js';
+import { installBackGuard } from './ui/backGuard.js';
 import { resolveInteractable } from './ui/documents.js';
 import { audio } from './audio/audio.js';
 import { wireUiSounds } from './audio/uiSounds.js';
@@ -39,9 +41,14 @@ wireUiSounds(stack, audio);
 const hud = new Hud();
 const touch = new TouchControls(document.getElementById('hud'), input);
 const uiRoot = document.getElementById('ui');
+// "Atrás" en el teléfono o el navegador cierra el menú o la ficha abiertos (no sale del sitio).
+installBackGuard(stack, { ignore: (layer) => layer === listView.layer });
 
 const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
 document.getElementById('app').appendChild(renderer.domElement);
+touch.watchTaps(renderer.domElement);
+touch.onTap = (x, y) => tapScene(x, y);
+hud.onPromptTap = () => input.press('interact');
 renderer.info.autoReset = false; // se reinicia a mano: cuenta los dos pasos del render PS1
 const ps1 = new Ps1Renderer(renderer, { height: 240 });
 ps1.setEnabled(settings.ps1);
@@ -243,6 +250,7 @@ async function goToRoom(id, fromId, mode = doorMode()) {
 }
 
 function interact(target) {
+  if (input.lastDevice === 'touch') haptic('act');
   if (target.kind === 'door') {
     goToRoom(target.roomId, world.room.id);
     return;
@@ -283,7 +291,7 @@ function loop(time) {
       player.update(dt);
       director.update(player.position);
     }
-    const target = playing ? interaction.find(player) : null;
+    const target = playing ? interaction.find(player, input.lastDevice === 'touch' ? TOUCH_ASSIST : undefined) : null;
     // Pantallas animadas (siguen encendidas en pausa) y brillo de las puertas según la cercanía.
     world.room.update(dt, state === 'play' ? player.position : null, target);
 
@@ -300,6 +308,38 @@ function loop(time) {
   updateStats(rawDt);
   input.endFrame();
 }
+
+// ---------- Táctil: tocar la escena, saltar puertas, salir de la app ----------
+
+const TAP_REACH = 1.5; // m: tocar un objeto o una puerta a esta distancia lo examina / la abre
+const raycaster = new THREE.Raycaster();
+const ndc = new THREE.Vector2();
+
+/** Un toque corto en la escena: si cae sobre un objeto o una puerta cercanos, interactuar. */
+function tapScene(x, y) {
+  const { player, director, interaction } = world;
+  if (state !== 'play' || stack.isOpen || transition.busy || !player || !director) return;
+  ndc.set((x / window.innerWidth) * 2 - 1, -(y / window.innerHeight) * 2 + 1);
+  raycaster.setFromCamera(ndc, director.camera);
+  const hit = interaction.pick(raycaster.ray, player);
+  if (!hit) return;
+  const label = hit.item.label ?? '';
+  if (hit.distance <= TAP_REACH) interact(hit.item);
+  else {
+    haptic('deny');
+    hud.flash(t('touch.tooFar', { label }), 1600);
+  }
+}
+
+// Durante la animación de una puerta el HUD está oculto: tocar en cualquier parte la salta.
+window.addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'touch' && transition.busy) input.press('interact');
+}, { capture: true, passive: true });
+
+// Al cambiar de app o de pestaña en mitad del juego, al volver está en pausa.
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && state === 'play' && !stack.isOpen && !transition.busy && !listView.isOpen) pause.open();
+});
 
 /** FPS, draw calls y triángulos (los muestra el modo depuración, F3; y `__game.stats`). */
 function updateStats(rawDt) {

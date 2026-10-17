@@ -3,7 +3,8 @@ import { t } from '../core/i18n.js';
 /**
  * HUD: prompt de interacción, ayuda de controles (teclado, mando o táctil) y avisos breves.
  * En táctil el prompt no muestra tecla (el botón de acción de la pantalla hace de tecla) y la
- * ayuda se oculta: los controles en pantalla se explican solos.
+ * ayuda se oculta: los controles en pantalla se explican solos. En táctil el prompt también
+ * se puede tocar (`onPromptTap`) para examinar.
  */
 export class Hud {
   constructor() {
@@ -18,6 +19,12 @@ export class Hud {
     this.toastTimer = 0;
     this.promptTarget = null;
     this.device = 'keyboard';
+    this.onPromptTap = null;
+    this.prompt.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' && e.button > 0) return;
+      e.preventDefault();
+      this.onPromptTap?.();
+    });
     this.setDevice('keyboard');
   }
 

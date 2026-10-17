@@ -161,6 +161,14 @@ Se implementará añadiendo un campo `room` a cada proyecto en `projects.json` y
       traducidos, cambio desde el título, Opciones y modo lista, `?lang=` en la URL (ver §6.6).
   - [ ] **(TODO del usuario)** Revisar la traducción al inglés de `src/data/en/` (bio, proyectos y
         curiosidades) y ajustar el tono a tu gusto.
+- [x] **Móvil más cómodo** (Polish-2): joystick que sigue al dedo y corre más allá del aro, botones que
+      responden al apoyar el dedo, tocar objetos/puertas para examinar, botón "atrás" del teléfono que
+      cierra capas, fichas con barra fija y deslizables, visor de galería, pausa con objetivos táctiles
+      grandes y pestañas deslizables, título que cabe en horizontal, pantalla completa, vibración y
+      opciones de tamaño/lado de los controles (ver §6.3c).
+  - [ ] **(TODO del usuario)** Probarlo en un teléfono real (Android e iPhone): sensación del joystick
+        (radio 52 px, correr a 1.12× el radio), vibración (solo Android) y pantalla completa (no existe
+        en iPhone para páginas web).
 - [ ] **(TODO del usuario)** Enlazar la nueva versión desde el portafolio clásico (`About-Me-Website`, que
       Claude no edita): un botón o aviso hacia https://starmise.github.io/.
 
@@ -252,10 +260,30 @@ comprueba (y la carga inicial).
 - Equipo lento: al arrancar se mira si hay WebGL 2, render por software, ≤ 2 GB de memoria o ≤ 2
   núcleos, o ahorro de datos (aviso en el título). Jugando, si dos ventanas de 4 s seguidas dan < 24 fps,
   un diálogo sugiere el modo lista una vez ("Seguir en 3D" lo desactiva; también en Opciones).
-- Táctil: joystick flotante en la mitad izquierda (al borde = correr), botón de acción con el verbo
-  del objeto al alcance, Mapa y ☰ arriba a la derecha. Aparece al tocar la pantalla (opción
-  "Controles táctiles": Automático / Siempre / Nunca). En vertical las cámaras abren el FOV (hasta
-  100°) para no perder ancho, y se sugiere girar el teléfono.
+- Táctil (`ui/touchControls.js`): joystick flotante en una mitad de la pantalla: hasta el aro se camina
+  (analógico), sacando el dedo más allá del aro (1.12× el radio; el aro exterior se pone rojo) se corre,
+  y si el dedo se aleja más de 1.6× la base lo sigue. Botón de acción con el verbo **y el nombre** del
+  objeto al alcance; Mapa, ☰ y pantalla completa (si existe) arriba a la derecha. Los botones actúan en
+  `pointerdown` (sin retardo y con el otro pulgar en el joystick). Aparece al tocar la pantalla (opción
+  "Controles táctiles": Automático / Siempre / Nunca); opciones extra solo en táctil: tamaño
+  (Normal / Grandes), lado del joystick (el botón de acción va al otro) y vibración. En vertical las
+  cámaras abren el FOV (hasta 100°) para no perder ancho, y se sugiere girar el teléfono.
+- **Tocar la escena** (toque corto < 260 ms y < 12 px, también dentro de la zona del joystick):
+  `Interaction.pick()` lanza un rayo contra las cajas de los `INT_`/`DOOR_`; a ≤ 1.5 m interactúa, más
+  lejos avisa "Acércate más: …". El aviso de "Examinar" también se puede tocar. En táctil
+  `Interaction.find()` usa `TOUCH_ASSIST` (alcance 0.95 m y ±87°) porque apuntar con el joystick cuesta más.
+- **Botón atrás** (`ui/backGuard.js`): con una capa cerrable abierta (pausa, ficha, visor, diálogo) se
+  deja una entrada "guardia" en el historial; "atrás" cierra la capa de arriba en vez de salir del sitio.
+  Si se cierran desde la interfaz, la guardia se retira con `history.back()`. El modo lista sigue con su
+  `#lista`. También funciona con el botón atrás del navegador en escritorio.
+- Fichas: barra fija (Nº, ◂ n/m ▸, ✕) y cuerpo desplazable; deslizar a los lados pasa de archivo
+  (`ui/swipe.js`, con `touch-action: pan-y`); la galería abre `ui/imageViewer.js` (capa propia) en vez de
+  otra pestaña. En pantallas de ≤ 520 px de alto o ≤ 560 px de ancho la ficha y la pausa ocupan toda la
+  pantalla (con márgenes de `safe-area`). Pausa: deslizar cambia de pestaña; en una opción, tocar su
+  mitad izquierda (◂) retrocede y ←/→ (teclado o mando) cambian el valor. Título: tocar en cualquier
+  parte pasa del "Toca para empezar"; en horizontal el menú va a dos columnas; "Controles" explica los
+  gestos táctiles. Tocar durante la animación de una puerta la salta. Al salir de la app (pestaña
+  oculta) en mitad del juego, se abre la pausa.
 - Movimiento reducido (sistema u opción "Movimiento"): sin vertex snapping, puertas con fundido,
   TV sin estática/parpadeo y sin parpadeos en la interfaz (clase `reduce-motion` en `<html>`).
 
@@ -349,6 +377,15 @@ art/              Fuentes (FBX, .blend, PSD, plantillas UV) — no se publican
 - ~~¿Música propia o CC0?~~ Propia: compuesta en código y sintetizada en el navegador (Fase 6).
 
 ## 10. Registro de decisiones
+- **2026-10-16** — **Móvil más cómodo** (rama `Polish-2`, a petición del usuario). Problemas que había:
+  "atrás" en Android sacaba del portafolio; el joystick corría al llegar al borde (fácil de activar sin
+  querer y sin margen para cambiar de dirección); los botones usaban `click` (retardo y fallos con dos
+  dedos); para cerrar una ficha había que bajar hasta el final; la galería abría otra pestaña; en
+  horizontal el menú del título se salía de la pantalla y en vertical el panel de pausa se desbordaba
+  (faltaba `grid-template-columns: minmax(0, 1fr)`); no había forma de saltar la puerta tocando.
+  Se sigue sin "clic para caminar" (sin pathfinding): tocar un objeto lejano solo avisa que hay que
+  acercarse. Ajustes nuevos: `touchSize`, `touchSide`, `haptics`. Módulos nuevos: `core/haptics.js`,
+  `core/fullscreen.js`, `ui/backGuard.js`, `ui/swipe.js`, `ui/imageViewer.js`; `UiStack.onLayers`.
 - **2026-10-10** — **Puertas más visibles**: el usuario notó que no se distinguían (hoja café oscuro
   sobre lambrín oscuro). Se resolvió en código (`world/doorMarkers.js`) para todas las salas sin
   regenerar los GLB: rendija de luz bajo la hoja, charco de luz aditivo en el piso (degradado en

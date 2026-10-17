@@ -1,6 +1,7 @@
 import { focusFirst } from './uiStack.js';
 import { settings, setSetting, onSettingsChange } from '../core/settings.js';
 import { t, lang, LANGUAGES, changeLanguage, otherLanguage } from '../core/i18n.js';
+import { fullscreenSupported, isFullscreen, toggleFullscreen, onFullscreenChange } from '../core/fullscreen.js';
 
 /**
  * Pantalla de carga + título. Mientras cargan los modelos muestra una barra de progreso;
@@ -10,6 +11,9 @@ import { t, lang, LANGUAGES, changeLanguage, otherLanguage } from '../core/i18n.
  *
  * El audio arranca con el primer gesto (normalmente "Pulsa Enter", que suena a campana).
  * El menú tiene un interruptor de sonido para quien prefiera navegar en silencio.
+ *
+ * Táctil: tocar en cualquier parte pasa de "Toca para empezar" al menú; el menú ofrece
+ * pantalla completa (si el navegador la admite) y "Controles" explica los gestos táctiles.
  */
 export class TitleScreen {
   constructor(root, stack, { profile, onStart, onList }) {
@@ -38,15 +42,17 @@ export class TitleScreen {
           <button type="button" data-act="start">${t('title.start')}</button>
           <button type="button" data-act="list">${t('title.list')} <small>${t('title.listNote')}</small></button>
           <button type="button" data-act="controls">${t('title.controls')}</button>
+          <button type="button" data-act="fullscreen" data-touch-only hidden>${t('title.fullscreen')}</button>
           <button type="button" data-act="sound" data-sound></button>
           <button type="button" data-act="language">${escapeHtml(t('title.language', { name: languageName(lang()) }))}</button>
           <a href="${escapeHtml(profile.classicSite)}" target="_blank" rel="noopener">${t('title.classic')}</a>
         </nav>
 
         <div class="title__controls" data-stage="controls">
-          <dl>
+          <dl data-controls="keys">
             ${t('title.controlsList').map(([action, keys]) => `<dt>${action}</dt><dd>${keys}</dd>`).join('')}
           </dl>
+          <dl data-controls="touch" hidden></dl>
           <p>${t('title.tankNote')}</p>
           <button type="button" data-act="back">${t('common.back')}</button>
         </div>
@@ -65,6 +71,12 @@ export class TitleScreen {
     onSettingsChange((key) => key === 'sound' && this.#paintSound());
 
     this.el.querySelector('.title__press').addEventListener('click', () => this.#setStage('menu'));
+    // "Toca para empezar": vale tocar en cualquier parte, no solo el texto.
+    this.el.addEventListener('click', (e) => {
+      if (this.stage === 'press' && e.detail > 0 && !e.target.closest('button, a')) this.el.querySelector('.title__press').click();
+    });
+    this.fsBtn = this.el.querySelector('[data-act="fullscreen"]');
+    onFullscreenChange(() => this.#paintFullscreen());
     this.el.addEventListener('click', (e) => {
       const act = e.target.closest('[data-act]')?.dataset.act;
       if (act === 'start') this.#start();
@@ -72,6 +84,7 @@ export class TitleScreen {
       else if (act === 'controls') this.#setStage('controls');
       else if (act === 'sound') setSetting('sound', !settings.sound);
       else if (act === 'language') changeLanguage(otherLanguage().code);
+      else if (act === 'fullscreen') toggleFullscreen();
       else if (act === 'back') this.#setStage('menu');
     });
 
@@ -114,8 +127,21 @@ export class TitleScreen {
   }
 
   setDevice(device) {
-    if (device === 'touch') this.startLabel.textContent = t('title.tap');
+    const touch = device === 'touch';
+    if (touch) this.startLabel.textContent = t('title.tap');
     else this.startLabel.innerHTML = t('title.press', { key: device === 'gamepad' ? 'Start' : 'Enter' });
+    this.fsBtn.hidden = !(touch && fullscreenSupported);
+    this.#paintFullscreen();
+    // Lista de controles: gestos táctiles o teclas/mando.
+    const touchList = this.el.querySelector('[data-controls="touch"]');
+    const side = t(settings.touchSide === 'right' ? 'opt.touchSideRight' : 'opt.touchSideLeft');
+    touchList.innerHTML = t('controls.touch').map(([a, how]) => `<dt>${a}</dt><dd>${how.replace('{side}', side)}</dd>`).join('');
+    touchList.hidden = !touch;
+    this.el.querySelector('[data-controls="keys"]').hidden = touch;
+  }
+
+  #paintFullscreen() {
+    this.fsBtn.textContent = t(fullscreenSupported && isFullscreen() ? 'touch.exitFullscreen' : 'title.fullscreen');
   }
 
   /** Aviso bajo el menú (vacío = ocultarlo). */
@@ -142,6 +168,7 @@ export class TitleScreen {
 
   #setStage(stage) {
     this.stage = stage;
+    this.el.dataset.stage = stage;
     for (const node of this.el.querySelectorAll('[data-stage]')) node.hidden = node.dataset.stage !== stage;
     if (stage === 'press') this.el.querySelector('.title__press').focus({ preventScroll: true });
     else if (stage === 'menu') focusFirst(this.el.querySelector('.title__menu'));

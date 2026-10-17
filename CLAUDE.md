@@ -66,13 +66,16 @@ exportar `player.glb` desde Blender con `Idle`/`Walk`/`Run` (PLAN.md §5) — el
 `GalleryExample*`); comprobar 60 fps con F3 en un portátil medio; probar en Firefox, Safari y un
 teléfono real; cambiar en Settings → Pages la fuente a GitHub Actions y hacer push; enlazar el sitio
 nuevo desde el portafolio clásico; rehacer `public/og-image.jpg` cuando esté el personaje final.
-Siguiente: revisar las salas y el audio con el usuario.
+Rama `Polish-2`: controles e interacciones cómodos en móvil (PLAN.md §6.3c); falta probarlos en un
+teléfono real. Siguiente: revisar las salas y el audio con el usuario.
 
 Controles: WASD/flechas o stick mover · Shift/X correr · E/Enter/A examinar y abrir puertas ·
 Esc/Tab/Start menú · M/Select mapa · I inventario · Q/E o LB/RB pestañas y fichas · F3 (o `º`)
-depuración (colisiones, triggers, fps, draw calls, triángulos). Táctil: joystick en la mitad izquierda
-(al borde corre), botón de acción, Mapa y ☰. En la consola del navegador, `__game` expone el estado
-(`__game.stats`: fps, draw calls, triángulos).
+depuración (colisiones, triggers, fps, draw calls, triángulos). Táctil: joystick flotante (más allá del
+aro corre; lado y tamaño en Opciones), botón de acción con el nombre del objeto, tocar un objeto o puerta
+cercanos para examinar/abrir, Mapa, ☰ y pantalla completa; "atrás" del teléfono cierra menús y fichas,
+deslizar pasa de ficha o de pestaña, tocar salta la animación de puerta (PLAN.md §6.3c). En la consola
+del navegador, `__game` expone el estado (`__game.stats`: fps, draw calls, triángulos).
 
 ## Comandos
 
@@ -125,6 +128,8 @@ src/
   core/motion.js   Movimiento reducido (sistema u opción) → clase reduce-motion
   core/capabilities.js  WebGL 2, render por software, poca memoria, ahorro de datos
   core/perfMonitor.js   FPS jugando; avisa si el equipo va lento
+  core/haptics.js  Vibración breve en táctil (opción "Vibración"; solo donde existe navigator.vibrate)
+  core/fullscreen.js  Pantalla completa (+ fijar horizontal si se puede); no existe en iPhone
   core/assets.js   Rutas de miniaturas (thumbUrl) y de YouTube (miniatura, embed)
   render/ps1Material.js  Vertex snapping + mapeo afín (onBeforeCompile), conversión a Lambert
   render/ps1Renderer.js  Render a 240 px + post-proceso 15 bits con dithering
@@ -146,7 +151,10 @@ src/
   ui/documents.js  Convierte projects.json/profile.json en documentos; resuelve INT_<id>
   ui/hud.js        Prompt "Examinar/Abrir", ayuda de controles, avisos
   ui/listView.js   Modo lista: todo el portafolio en HTML accesible (sin Three.js)
-  ui/touchControls.js  Joystick virtual y botones en pantalla
+  ui/touchControls.js  Joystick virtual, botones en pantalla y toques en la escena
+  ui/backGuard.js  Botón "atrás" del teléfono/navegador = cerrar la capa de arriba (entrada guardia)
+  ui/swipe.js      Deslizar a los lados (fichas, pestañas de pausa, visor)
+  ui/imageViewer.js  Visor de la galería de una ficha (capa de la UiStack)
   ui/suggestDialog.js  Diálogo de dos opciones (sugerir el modo lista)
   ui/languageScreen.js Pantalla bilingüe de elección de idioma (primera visita)
   i18n/es.js, en.js  Textos de la interfaz por idioma (mismas claves); en.js trae también data/en/
@@ -217,6 +225,10 @@ La estructura objetivo (con `public/`, `art/`, etc.) está en `PLAN.md` §7.
   de esperar sonido. `__game.audio.state` resume su estado; para escuchar la música fuera del juego se
   renderiza con un `OfflineAudioContext`. Para cambiar el ambiente o el suelo de una sala basta con
   `rooms.json`.
+- Para probar el táctil con Playwright, `page.tap()` no sirve para arrastrar: usar CDP
+  (`Input.dispatchTouchEvent` con `touchStart`/`touchMove`/`touchEnd`) y un dispositivo emulado
+  (`devices['Pixel 7']`, viewport 915×412 en horizontal). En Chromium emulado `navigator.vibrate` existe
+  (en iPhone real no) y la pantalla completa no se puede comprobar sin gesto real.
 - `public/og-image.jpg` es una captura de la pantalla de título a 1200×630 (Playwright con las fuentes
   reales; el texto de "Pulsa Enter" se cambió por "Portafolio interactivo · Game Developer"). Rehacerla
   cuando cambie el personaje o el Hall. Las URL de Open Graph son absolutas (`profile.site.url`).
