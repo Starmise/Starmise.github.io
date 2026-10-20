@@ -59,7 +59,18 @@ export const strings = {
     ['Run', 'Shift · X / □'],
     ['Examine, open doors', 'E / Enter · A / ✕'],
     ['Menu (inventory, map, options)', 'Esc · Start'],
-    ['Touch screen', 'Joystick on the left (push to the edge to run) · action button · ☰ menu'],
+    ['Touch screen', 'Joystick (drag past the ring to run) · action button or tap the object · ☰ menu'],
+  ],
+  'title.fullscreen': 'Full screen',
+  // Touch-screen controls (title and Options, when playing by touch). {side}: joystick side.
+  'controls.touch': [
+    ['Move', 'Rest your thumb on the {side} side and drag'],
+    ['Run', 'Drag past the ring (it turns red)'],
+    ['Examine, open', 'Action button, or tap the object or door'],
+    ['Menu · Map', '☰ and Map, top right'],
+    ['Next / previous file', 'Swipe the file sideways'],
+    ['Back, close', 'Phone back button, ✕ or tap outside'],
+    ['Skip the door', 'Tap the screen'],
   ],
 
   // HUD and touch
@@ -72,6 +83,9 @@ export const strings = {
   'touch.map': 'Map',
   'touch.menu': 'Menu',
   'touch.nothing': 'Nothing to examine',
+  'touch.fullscreen': 'Full screen',
+  'touch.exitFullscreen': 'Exit full screen',
+  'touch.tooFar': 'Get closer: {label}',
 
   // Pause menu
   'pause.aria': 'Pause menu',
@@ -80,7 +94,7 @@ export const strings = {
   'pause.tab.options': 'Options',
   'pause.resume': 'Resume',
   'pause.hint.gamepad': 'LB/RB tabs · Ⓐ select · Ⓑ back',
-  'pause.hint.touch': 'Tap a tab or an option',
+  'pause.hint.touch': 'Tap an option · swipe to change tabs',
   'pause.hint.keyboard': 'Q/E tabs · ↑↓ choose · Enter select · Esc back',
   'pause.skills': 'Skills',
   'pause.personal': 'Personal files',
@@ -102,7 +116,7 @@ export const strings = {
     ['Map · Inventory', 'M · I', 'Select'],
     ['Tabs / files', 'Q · E', 'LB · RB'],
     ['Quick turn (classic)', 'back + Shift', 'back + X'],
-    ['Touch screen', 'joystick on the left (push to the edge to run)', 'action button · ☰ menu'],
+    ['Touch screen', 'joystick (drag past the ring to run)', 'action button or tap the object · ☰ menu'],
   ],
 
   // Options
@@ -125,6 +139,15 @@ export const strings = {
   'opt.touchAuto': 'Automatic',
   'opt.touchOn': 'Always',
   'opt.touchOff': 'Never',
+  'opt.touchSize': 'Control size',
+  'opt.touchSizeNormal': 'Normal',
+  'opt.touchSizeLarge': 'Large',
+  'opt.touchSide': 'Joystick',
+  'opt.touchSideLeft': 'left',
+  'opt.touchSideRight': 'right',
+  'opt.touchSideNote': 'The action button goes on the other side.',
+  'opt.haptics': 'Vibration',
+  'opt.hapticsNote': 'Short, when running and examining.',
   'opt.perfHint': 'Suggest list mode if it runs slowly',
   'opt.sound': 'Sound',
   'opt.soundNote': 'Original music and effects, synthesized in the browser.',
@@ -139,7 +162,13 @@ export const strings = {
   'file.close': 'Close',
   'file.play': '▶ Play',
   'file.playAria': 'Play: {title}',
-  'file.imageAria': 'Image {n} of {title} (opens in a new tab)',
+  'file.imageAria': 'Image {n} of {title}',
+  'file.closeAria': 'Close file',
+  'viewer.aria': 'Image {n} of {total}: {title}',
+  'viewer.close': 'Close image',
+  'viewer.prev': 'Previous image',
+  'viewer.next': 'Next image',
+  'viewer.open': 'Open original ↗',
   'file.prev': 'Previous file',
   'file.next': 'Next file',
 

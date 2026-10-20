@@ -16,6 +16,12 @@
 
 [hidden] { display: none !important; }
 
+html {
+  -webkit-tap-highlight-color: transparent; /* sin el recuadro azul al tocar */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 html, body {
   margin: 0;
   height: 100%;
@@ -108,6 +114,7 @@ kbd {
   position: fixed;
   inset: 0;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   place-items: center;
   padding: 16px;
   z-index: 10;
@@ -126,12 +133,14 @@ kbd {
   width: min(680px, 100%);
   max-height: calc(100vh - 32px);
   max-height: calc(100dvh - 32px);
-  overflow-y: auto;
-  padding: 36px 44px 28px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
   background:
-    repeating-linear-gradient(0deg, transparent 0 27px, rgba(80, 60, 30, 0.08) 27px 28px),
     radial-gradient(ellipse at 30% 10%, rgba(255, 255, 255, 0.25), transparent 60%),
     var(--paper);
+  touch-action: pan-y; /* el desplazamiento vertical es del navegador; a los lados = pasar de ficha */
   color: var(--ink);
   font-family: var(--doc-font);
   font-size: 16px;
@@ -150,7 +159,9 @@ kbd {
 }
 
 .file-doc__kicker {
-  margin: 0 0 4px;
+  flex: 1;
+  min-width: 0;
+  margin: 0;
   font-size: 13px;
   letter-spacing: 0.25em;
   text-transform: uppercase;
@@ -322,15 +333,156 @@ kbd {
   outline-offset: 2px;
 }
 
+/* Barra fija de la ficha (número, ◂ n/m ▸, ✕) y cuerpo desplazable. */
+.file-doc__bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 28px 10px 44px;
+  border-bottom: 1px dashed rgba(74, 66, 56, 0.35);
+}
+
+.file-doc__x {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  font: inherit;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--ink-soft);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.file-doc__x:hover,
+.file-doc__x:focus-visible,
+.file-doc__x:active { background: var(--ink); color: var(--paper); }
+
+.file-doc__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  padding: 18px 44px 28px;
+  outline: none;
+  background: repeating-linear-gradient(0deg, transparent 0 27px, rgba(80, 60, 30, 0.08) 27px 28px) local;
+  scrollbar-color: var(--ink-soft) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+.file-doc__body.is-from-right { animation: doc-in-right 160ms steps(3); }
+.file-doc__body.is-from-left { animation: doc-in-left 160ms steps(3); }
+@keyframes doc-in-right { from { transform: translateX(28px); opacity: 0.3; } }
+@keyframes doc-in-left { from { transform: translateX(-28px); opacity: 0.3; } }
+
 @media (max-width: 560px) {
-  .file-doc { padding: 24px 18px 20px; }
+  .file-doc__bar { padding: 12px 12px 8px 18px; }
+  .file-doc__body { padding: 14px 18px 20px; }
   .file-doc__title { font-size: 24px; }
   #help { display: none; }
 }
 
+/* Teléfonos: la ficha ocupa toda la pantalla (en horizontal, todo el alto). */
+@media (max-width: 560px), (max-height: 520px) {
+  .file-view { padding: 0; }
+  .file-doc {
+    max-height: 100vh;
+    max-height: 100dvh;
+    height: 100%;
+    box-shadow: 0 0 0 1px var(--paper-edge);
+  }
+  .file-doc__bar { padding-top: calc(10px + env(safe-area-inset-top)); padding-right: calc(12px + env(safe-area-inset-right)); }
+  .file-doc__body { padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
+  .file-doc__cover img { max-height: 46vh; max-height: 46dvh; }
+}
+
+@media (max-width: 560px) {
+  .file-doc { width: 100%; }
+  .file-doc__bar { padding-left: calc(18px + env(safe-area-inset-left)); }
+}
+
+/* Visor de imágenes de la galería */
+.viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 11;
+  background: rgba(0, 0, 0, 0.92);
+}
+
+.viewer__panel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  outline: none;
+}
+
+.viewer__figure {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  display: grid;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+  place-items: center;
+  padding: calc(12px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) 0 calc(12px + env(safe-area-inset-left));
+  touch-action: pan-y;
+}
+
+.viewer__figure img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border: 1px solid #3a3530;
+  background: #111;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.viewer__bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px calc(12px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) calc(12px + env(safe-area-inset-left));
+  font-size: 20px;
+  color: var(--muted);
+}
+
+.viewer__btn,
+.viewer__open {
+  min-width: 48px;
+  min-height: 48px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 22px;
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid #3a3530;
+  text-decoration: none;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.viewer__open { font-size: 18px; }
+.viewer__close { margin-left: 12px; }
+.viewer__btn:hover, .viewer__btn:focus-visible, .viewer__btn:active,
+.viewer__open:hover, .viewer__open:focus-visible { border-color: var(--text); color: #fff; outline: none; }
+.viewer__count:empty { display: none; }
+
 /* Movimiento reducido: la clase la pone core/motion.js (sistema u opción del menú). */
 .reduce-motion .file-doc,
 .reduce-motion .title { transition: none; }
+.reduce-motion .file-doc__body { animation: none !important; }
+.file-doc .file-doc__body:focus-visible { outline: none; }
 .reduce-motion #prompt,
 .reduce-motion .title__press,
 .reduce-motion #door-loading { animation: none; }
@@ -353,7 +505,6 @@ kbd {
 .file-doc ul:not(.file-doc__tags) { margin: 0; padding-left: 1.2em; }
 .file-doc ul:not(.file-doc__tags) li + li { margin-top: 6px; }
 
-.file-doc__kicker { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 
 .file-doc__nav {
   display: flex;
@@ -379,6 +530,7 @@ kbd {
 .file-doc__step:hover,
 .file-doc__step:focus-visible { background: var(--ink); color: var(--paper); }
 .touch-ui .file-doc__keys { display: none; }
+.touch-ui .file-doc__step { min-width: 40px; min-height: 40px; font-size: 16px; }
 
 /* ---------- Fundido y carga entre salas ---------- */
 
@@ -562,6 +714,38 @@ kbd {
   color: #5d594f;
 }
 
+/* Título en el móvil: botones más altos y, en horizontal, todo cabe sin recortarse. */
+.title { overflow-y: auto; overscroll-behavior: contain; }
+.touch-ui .title__menu > *,
+.touch-ui .title__controls > button { min-height: 44px; display: flex; align-items: center; justify-content: center; }
+.touch-ui .title__menu > :focus:not(:focus-visible) { color: var(--text); }
+.touch-ui .title__controls p { display: none; } /* los controles tipo tanque no aplican al joystick */
+.touch-ui .title__menu > :focus:not(:focus-visible)::before { content: none; }
+
+@media (max-height: 520px) {
+  .title { place-items: start center; padding: calc(10px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom)); }
+  .title__inner { margin: auto 0; }
+  .title__logo { font-size: clamp(44px, 19vh, 96px); }
+  .title__sub { margin: 6px 0 14px; font-size: 18px; }
+  .title__menu {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    justify-items: center;
+    gap: 0 40px;
+    font-size: 25px;
+  }
+  .title__press { font-size: 26px !important; padding: 12px 24px; }
+  .title__controls { font-size: 19px; }
+  .title__controls p { margin: 6px 0; font-size: 16px; }
+  /* La lista de controles necesita el alto: sin logo mientras se ve. */
+  .title[data-stage='controls'] .title__logo,
+  .title[data-stage='controls'] .title__sub { display: none; }
+  .title__controls dl { gap: 2px 18px; }
+  .title[data-stage='controls'] .title__hint { display: none; }
+  .title__hint { margin-top: 10px; font-size: 16px; }
+  .title__legal { position: static; margin: 10px 0 0; font-size: 13px; }
+}
+
 /* ---------- Elección de idioma (primera visita) ---------- */
 
 .lang-screen {
@@ -661,6 +845,7 @@ kbd {
   inset: 0;
   z-index: 9;
   display: grid;
+  grid-template-columns: minmax(0, 1fr); /* sin esto, en pantallas estrechas el panel se salía por la derecha */
   place-items: center;
   padding: 16px;
   background: rgba(0, 0, 0, 0.55);
@@ -811,14 +996,65 @@ kbd {
 
 @media (max-width: 560px) {
   .pause__hint { display: none; }
+  .pause__tabs { gap: 0; }
+  .pause__tab { letter-spacing: 0.02em; }
+  .opt-row { flex-wrap: wrap; gap: 4px 12px; }
+  .opt-row__label { flex: 1 1 9em; }
+  .pause__panel { height: min(720px, calc(100dvh - 32px)); }
+  .pause__foot { font-size: 16px; line-height: 1.1; }
+  .opt-row__value { margin-left: auto; }
   .pause__tab { padding: 6px 8px 8px; font-size: 22px !important; }
   .pause__body { padding: 8px 14px 16px; }
   .controls-list { grid-template-columns: 1fr; }
 }
 
-/* ---------- Controles táctiles (Fase 5) ---------- */
+/* ---------- Menú de pausa en pantallas táctiles y bajas ---------- */
+
+.pause__body { touch-action: pan-y; overscroll-behavior: contain; }
+.opt-row__value { display: inline-flex; align-items: center; gap: 0.45em; white-space: nowrap; }
+.opt-row__arrow { color: var(--muted); font-size: 0.8em; }
+.opt-row__value:focus .opt-row__arrow,
+.opt-row__value:hover .opt-row__arrow { color: var(--accent); }
+
+.touch-ui .pause__hint { display: none; }
+.touch-ui .pause__tab { min-height: 48px; }
+.touch-ui .pause__item { min-height: 46px; display: flex; align-items: center; padding-top: 4px !important; padding-bottom: 4px !important; }
+.touch-ui .pause__item:focus::before { top: auto; }
+.touch-ui .map-room__go { min-height: 40px; padding: 0 18px !important; }
+.touch-ui .pause__resume { min-height: 44px; padding: 0 16px !important; }
+.touch-ui .opt-row { min-height: 52px; }
+.touch-ui .opt-row__value { min-height: 46px; padding: 0 8px !important; gap: 0.8em; }
+.touch-ui .opt-row__arrow { font-size: 1em; color: var(--text); }
+.touch-ui .opt-row input[type='range'] { height: 36px; }
+.touch-ui .pause__item:focus:not(:focus-visible) { background: none !important; }
+.touch-ui .pause__item:focus:not(:focus-visible)::before { content: none; }
+.touch-ui .opt-row:focus-within:not(:has(:focus-visible)) { background: none; }
+
+@media (max-height: 520px) {
+  .pause { padding: 0; }
+  .pause__panel {
+    width: min(860px, 100%);
+    height: 100vh;
+    height: 100dvh;
+    border-top: 0;
+    border-bottom: 0;
+    box-shadow: none;
+  }
+  .pause__head { padding: calc(4px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) 0 calc(16px + env(safe-area-inset-left)); }
+  .pause__tab { font-size: 23px !important; padding: 4px 14px 6px; }
+  .pause__body { padding: 4px calc(20px + env(safe-area-inset-right)) 12px calc(20px + env(safe-area-inset-left)); }
+  .pause__foot { padding: 6px calc(16px + env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left)); }
+  .opt-row__note { font-size: 15px; }
+}
+
+/* ---------- Controles táctiles (Fase 5; pulidos para móvil) ---------- */
 
 .touch {
+  --stick: 112px; /* 2 × radio del joystick (touchControls.js) + borde */
+  --knob: 48px;
+  --ring: 140px; /* aro de correr: 2 × 1.12 × radio + margen */
+  --act: 112px;
+  --top-btn: 48px;
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -827,38 +1063,69 @@ kbd {
   -webkit-touch-callout: none;
 }
 
+.touch--large {
+  --stick: 140px;
+  --knob: 60px;
+  --ring: 172px;
+  --act: 136px;
+  --top-btn: 56px;
+}
+
 .touch__zone {
   position: absolute;
   left: 0;
   bottom: 0;
   width: 50%;
-  height: 78%;
+  height: 80%;
   pointer-events: auto;
   touch-action: none;
 }
 
+.touch--swap .touch__zone { left: auto; right: 0; }
+
 .touch__stick {
   position: absolute;
-  left: calc(84px + env(safe-area-inset-left));
-  top: calc(100% - 84px - env(safe-area-inset-bottom));
-  width: 112px;
-  height: 112px;
-  margin: -56px 0 0 -56px;
+  left: calc(var(--stick) * 0.5 + 28px + env(safe-area-inset-left));
+  top: calc(100% - var(--stick) * 0.5 - 28px - env(safe-area-inset-bottom));
+  width: var(--stick);
+  height: var(--stick);
+  margin: calc(var(--stick) * -0.5) 0 0 calc(var(--stick) * -0.5);
   border: 2px solid rgba(216, 210, 196, 0.35);
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.25);
-  opacity: 0.55;
+  opacity: 0.5;
+  transition: opacity 120ms steps(2);
 }
 
-.touch__stick.is-active { opacity: 1; }
+.touch--swap .touch__stick {
+  left: calc(100% - var(--stick) * 0.5 - 28px - env(safe-area-inset-right));
+}
+
+.touch__stick.is-active { opacity: 1; transition: none; }
+
+/* Aro exterior: sacar el dedo hasta aquí = correr. Solo se ve mientras se usa el joystick. */
+.touch__ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--ring);
+  height: var(--ring);
+  margin: calc(var(--ring) * -0.5) 0 0 calc(var(--ring) * -0.5);
+  border: 2px dashed rgba(216, 210, 196, 0.22);
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.touch__stick.is-active .touch__ring { opacity: 1; }
+.touch__stick.is-running .touch__ring { border-style: solid; border-color: var(--accent); box-shadow: 0 0 12px rgba(163, 23, 44, 0.6); }
 
 .touch__knob {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 48px;
-  height: 48px;
-  margin: -24px 0 0 -24px;
+  width: var(--knob);
+  height: var(--knob);
+  margin: calc(var(--knob) * -0.5) 0 0 calc(var(--knob) * -0.5);
   border-radius: 50%;
   background: rgba(216, 210, 196, 0.75);
   box-shadow: 0 2px 0 #000;
@@ -868,20 +1135,33 @@ kbd {
 
 .touch__btn {
   pointer-events: auto;
-  touch-action: manipulation;
+  touch-action: none;
   font: inherit;
   font-size: 22px;
   color: var(--text);
   background: rgba(0, 0, 0, 0.55);
   border: 1px solid rgba(216, 210, 196, 0.45);
-  min-width: 48px;
-  min-height: 48px;
+  min-width: var(--top-btn);
+  min-height: var(--top-btn);
   padding: 0 14px;
   text-shadow: 0 2px 0 #000;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.touch__btn:active { background: var(--accent); }
+.touch__btn:active,
+.touch__btn.is-pressed { background: var(--accent); border-color: #e9e2d0; }
+
+.touch__btn--icon {
+  display: grid;
+  place-items: center;
+  width: var(--top-btn);
+  padding: 0;
+}
+
+.touch__btn--icon svg .fs-out,
+.touch__btn--icon.is-on svg .fs-in { display: none; }
+.touch__btn--icon.is-on svg .fs-out { display: inline; }
 
 .touch__top {
   position: absolute;
@@ -894,20 +1174,45 @@ kbd {
 .touch__btn--act {
   position: absolute;
   right: calc(24px + env(safe-area-inset-right));
-  bottom: calc(40px + env(safe-area-inset-bottom));
-  min-width: 112px;
-  min-height: 112px;
+  bottom: calc(32px + env(safe-area-inset-bottom));
+  width: var(--act);
+  height: var(--act);
+  min-width: 0;
   border-radius: 50%;
   border-width: 2px;
-  font-size: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 0 10px;
   line-height: 1;
-  padding: 0 6px;
 }
 
-.touch__btn--act.is-idle { opacity: 0.4; }
+.touch--swap .touch__btn--act {
+  right: auto;
+  left: calc(24px + env(safe-area-inset-left));
+}
 
-/* En táctil, el aviso de interacción sube para no quedar bajo los pulgares. */
-.touch-ui #prompt { bottom: 46%; }
+.touch__verb { font-size: 24px; }
+
+.touch__what {
+  max-width: 100%;
+  font-size: 15px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.touch__what:empty { display: none; }
+.touch__btn--act:not(.is-idle) { border-color: #e9e2d0; box-shadow: 0 0 0 3px rgba(163, 23, 44, 0.55), 0 0 18px rgba(163, 23, 44, 0.45); }
+.touch__btn--act:not(.is-idle) .touch__what { color: var(--text); }
+.touch__btn--act.is-idle { opacity: 0.35; }
+.touch__btn--act.is-pressed .touch__what { color: #fff; }
+
+/* En táctil, el aviso de interacción sube para no quedar bajo los pulgares y se puede tocar. */
+.touch-ui #prompt { bottom: 46%; z-index: 1; pointer-events: auto; cursor: pointer; touch-action: none; }
 .touch-ui #toast { top: calc(72px + env(safe-area-inset-top)); }
 .touch-ui #help { display: none; }
 

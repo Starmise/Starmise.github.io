@@ -2,12 +2,18 @@ import { settings, setSetting } from '../core/settings.js';
 import { focusFirst } from './uiStack.js';
 import { PROFILE_DOCUMENTS, projectDocument, whatIDoDocument } from './documents.js';
 import { t, lang, LANGUAGES, changeLanguage, otherLanguage } from '../core/i18n.js';
+import { canVibrate } from '../core/haptics.js';
+import { onSwipe } from './swipe.js';
 
 const TABS = ['inventory', 'map', 'options'];
 
 /**
  * Menú de pausa: Inventario (habilidades y archivos personales), Mapa (salas y proyectos;
  * abre fichas o viaja a una sala) y Opciones. Capa de la UiStack.
+ *
+ * Táctil: deslizar a los lados cambia de pestaña; en las opciones, tocar la mitad izquierda
+ * del valor (◂) va hacia atrás y la derecha (▸) hacia delante (también ←/→ con teclado o
+ * mando). Las opciones de los controles táctiles solo aparecen si se está jugando tocando.
  */
 export class PauseMenu {
   constructor(root, stack, { fileView, projects, profile, rooms, getCurrentRoom, onTravel, onTitle, onList }) {
@@ -34,6 +40,10 @@ export class PauseMenu {
     this.body = this.el.querySelector('.pause__body');
     this.hint = this.el.querySelector('[data-hint]');
     this.el.querySelector('.pause__resume').addEventListener('click', () => this.close());
+    onSwipe(this.body, (dir) => {
+      this.#cycleTab(dir);
+      this.stack.onSound?.('page');
+    });
 
     for (const id of TABS) {
       const b = document.createElement('button');
@@ -56,9 +66,14 @@ export class PauseMenu {
       onHide: () => (this.el.hidden = true),
       onAction: (action) => {
         if (action === 'tabPrev' || action === 'tabNext') {
-          const i = TABS.indexOf(this.tab);
-          const d = action === 'tabNext' ? 1 : -1;
-          this.show(TABS[(i + d + TABS.length) % TABS.length]);
+          this.#cycleTab(action === 'tabNext' ? 1 : -1);
+          return true;
+        }
+        // ←/→ sobre una opción cambian su valor (en vez de mover el cursor).
+        const el = document.activeElement;
+        if ((action === 'left' || action === 'right') && el?.stepOption) {
+          el.stepOption(action === 'right' ? 1 : -1);
+          this.stack.onSound?.('move');
           return true;
         }
         if (action === 'pause') {
@@ -87,6 +102,11 @@ export class PauseMenu {
   show(tab) {
     this.tab = tab;
     this.#render();
+  }
+
+  #cycleTab(d) {
+    const i = TABS.indexOf(this.tab);
+    this.show(TABS[(i + d + TABS.length) % TABS.length]);
   }
 
   setDevice(device) {
@@ -206,6 +226,16 @@ export class PauseMenu {
         [['auto', t('opt.motionAuto')], ['reduce', t('opt.motionReduce')], ['full', t('opt.motionFull')]],
         t('opt.motionNote')),
       toggleRow(t('opt.touch'), 'touch', [['auto', t('opt.touchAuto')], ['on', t('opt.touchOn')], ['off', t('opt.touchOff')]]),
+    );
+    if (touchUi()) {
+      rows.append(
+        toggleRow(t('opt.touchSize'), 'touchSize', [['normal', t('opt.touchSizeNormal')], ['large', t('opt.touchSizeLarge')]]),
+        toggleRow(t('opt.touchSide'), 'touchSide',
+          [['left', cap(t('opt.touchSideLeft'))], ['right', cap(t('opt.touchSideRight'))]], t('opt.touchSideNote')),
+      );
+      if (canVibrate) rows.append(toggleRow(t('opt.haptics'), 'haptics', yesNo, t('opt.hapticsNote')));
+    }
+    rows.append(
       toggleRow(t('opt.perfHint'), 'perfHint', yesNo),
       toggleRow(t('opt.sound'), 'sound', yesNo, t('opt.soundNote')),
       sliderRow(t('opt.volume'), 'volume'),
@@ -216,8 +246,13 @@ export class PauseMenu {
 
     frag.append(h('h2', t('pause.controls')));
     const table = h('dl', null, 'controls-list');
-    for (const [action, key, pad] of t('pause.controlsList')) {
-      table.append(h('dt', action), h('dd', `${key}  ·  ${pad}`));
+    if (touchUi()) {
+      const side = t(settings.touchSide === 'right' ? 'opt.touchSideRight' : 'opt.touchSideLeft');
+      for (const [action, how] of t('controls.touch')) table.append(h('dt', action), h('dd', how.replace('{side}', side)));
+    } else {
+      for (const [action, key, pad] of t('pause.controlsList')) {
+        table.append(h('dt', action), h('dd', `${key}  ·  ${pad}`));
+      }
     }
     frag.append(table);
 
@@ -257,13 +292,20 @@ function toggleRow(label, key, options, note) {
   b.className = 'opt-row__value';
   const paint = () => {
     const i = options.findIndex(([v]) => v === settings[key]);
-    b.textContent = `◂ ${options[i]?.[1] ?? options[0][1]} ▸`;
-    b.setAttribute('aria-label', t('opt.aria', { label, value: options[i]?.[1] ?? options[0][1] }));
+    const value = options[i]?.[1] ?? options[0][1];
+    b.innerHTML = '<span class="opt-row__arrow" aria-hidden="true">◂</span><span class="opt-row__text"></span><span class="opt-row__arrow" aria-hidden="true">▸</span>';
+    b.querySelector('.opt-row__text').textContent = value;
+    b.setAttribute('aria-label', t('opt.aria', { label, value }));
   };
-  b.addEventListener('click', () => {
-    const i = options.findIndex(([v]) => v === settings[key]);
-    setSetting(key, options[(i + 1) % options.length][0]);
+  b.stepOption = (d) => {
+    const i = Math.max(0, options.findIndex(([v]) => v === settings[key]));
+    setSetting(key, options[(i + d + options.length) % options.length][0]);
     paint();
+  };
+  // Con el dedo o el ratón: la mitad izquierda (◂) retrocede; la derecha (▸) o Enter avanzan.
+  b.addEventListener('click', (e) => {
+    const r = b.getBoundingClientRect();
+    b.stepOption(e.detail > 0 && e.clientX && e.clientX < r.left + r.width * 0.4 ? -1 : 1);
   });
   paint();
   row.append(b);
@@ -284,6 +326,15 @@ function sliderRow(label, key, note) {
   input.addEventListener('input', () => setSetting(key, Number(input.value)));
   row.append(input);
   return row;
+}
+
+/** ¿Se está jugando con los controles táctiles en pantalla? (los muestra ui/touchControls.js) */
+function touchUi() {
+  return document.documentElement.classList.contains('touch-ui');
+}
+
+function cap(text) {
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 function button(label, onClick, className = 'pause__item', ariaLabel) {
