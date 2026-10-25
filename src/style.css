@@ -1703,3 +1703,323 @@ kbd {
   .lm-whatido__item { grid-template-columns: 72px minmax(0, 1fr); }
   .lm-whatido__item img { width: 72px; }
 }
+
+/* ---------- Easter egg: STARMISE · Rompemuros (código Konami, ui/breakout.js) ---------- */
+
+.egg {
+  position: fixed;
+  inset: 0;
+  z-index: 9; /* encima del título y de la pausa (va después en el DOM); las fichas (10) van encima */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  place-items: center;
+  padding: 16px;
+  background: radial-gradient(ellipse at 50% 50%, rgba(20, 6, 10, 0.78), rgba(0, 0, 0, 0.93) 75%);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.egg__panel {
+  --screen-w: min(864px, calc(100vw - 64px), calc((100vh - 170px) * 4 / 3));
+  --screen-w: min(864px, calc(100vw - 64px), calc((100dvh - 170px) * 4 / 3));
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  width: calc(var(--screen-w) + 32px);
+  max-width: 100%;
+  padding: 10px 16px 8px;
+  background: rgba(10, 9, 10, 0.96);
+  border: 1px solid #3a3530;
+  box-shadow: 0 0 0 3px #0b0b0d, 0 0 0 4px #2a2622, 0 20px 60px rgba(0, 0, 0, 0.85);
+  outline: none;
+  font-size: 20px;
+}
+
+.egg__head {
+  display: flex;
+  align-items: center;
+  gap: 8px 18px;
+  flex-wrap: wrap;
+}
+
+.egg__brand {
+  margin: 0;
+  font-size: 28px;
+  letter-spacing: 0.1em;
+  color: #e9e2d0;
+  text-shadow: 2px 2px 0 var(--accent);
+}
+
+.egg__stats {
+  display: flex;
+  gap: 2px 16px;
+  flex-wrap: wrap;
+  margin: 0 0 0 auto;
+}
+
+.egg__stats > div { display: flex; gap: 6px; align-items: baseline; }
+.egg__stats dt { color: #6d685d; font-size: 16px; letter-spacing: 0.12em; text-transform: uppercase; }
+.egg__stats dd { margin: 0; color: var(--text); font-variant-numeric: tabular-nums; }
+.egg__lives { color: var(--accent) !important; letter-spacing: 0.1em; min-width: 3ch; }
+
+.egg__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.egg__tools { display: flex; gap: 6px; }
+
+.egg button {
+  font: inherit;
+  color: var(--text);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.egg__tool {
+  min-width: 36px;
+  min-height: 32px;
+  padding: 0 8px !important;
+  border: 1px solid #3a3530 !important;
+  font-size: 18px !important;
+  line-height: 1;
+}
+
+.egg__tool:hover, .egg__tool:focus-visible { border-color: var(--text) !important; color: #fff !important; outline: none; }
+
+/* Con el minijuego abierto, la ayuda de controles de la mansión no asoma por detrás. */
+body:has(.egg:not([hidden])) #hud { visibility: hidden; }
+
+/* La pantalla: un CRT con su vidrio (líneas de barrido y viñeta) sobre el canvas de 320×240. */
+.egg__screen {
+  position: relative;
+  width: var(--screen-w);
+  max-width: 100%;
+  aspect-ratio: 4 / 3;
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: 10px / 8px;
+  background: #050506;
+  box-shadow: 0 0 0 2px #1d1a18, 0 0 0 6px #0b0b0d, 0 0 0 7px #2a2622, 0 0 40px rgba(163, 23, 44, 0.12);
+}
+
+.egg__screen canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.egg__screen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0) 0, rgba(0, 0, 0, 0) 2px, rgba(0, 0, 0, 0.22) 3px),
+    radial-gradient(ellipse at 50% 50%, transparent 58%, rgba(0, 0, 0, 0.55) 100%);
+  animation: egg-flicker 3.2s steps(2, jump-none) infinite;
+}
+
+@keyframes egg-flicker {
+  50% { opacity: 0.86; }
+}
+
+.egg__banner,
+.egg__toast {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  max-width: calc(100% - 24px);
+  text-align: center;
+  pointer-events: none;
+  text-shadow: 0 2px 0 #000, 0 0 10px #000;
+}
+
+.egg__banner {
+  top: 64%;
+  font-size: clamp(20px, 3.4vw, 30px);
+  letter-spacing: 0.08em;
+  white-space: pre-line;
+  color: #f1ead8;
+  animation: blink 1.2s steps(2, jump-none) infinite;
+}
+
+.egg__banner:empty, .egg__toast:empty { display: none; }
+
+.egg__toast {
+  top: 10px;
+  padding: 2px 12px;
+  font-size: clamp(16px, 2.6vw, 22px);
+  color: var(--ink);
+  background: var(--paper);
+  border-left: 4px solid var(--accent);
+  text-shadow: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Tarjetas: presentación, pausa y fin de partida (el nivel sigue jugándose detrás en la presentación). */
+.egg__card {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: safe center;
+  gap: 4px;
+  padding: 12px 16px;
+  overflow-y: auto;
+  text-align: center;
+  background: rgba(7, 6, 8, 0.8);
+  scrollbar-color: #3a3530 transparent;
+}
+
+.egg__found {
+  margin: 0 0 4px;
+  font-size: 18px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.egg__big {
+  margin: 0;
+  font-size: clamp(36px, min(9vw, 12vh), 92px);
+  font-weight: 400;
+  line-height: 0.9;
+  letter-spacing: 0.08em;
+  color: #e9e2d0;
+  text-shadow: 0 0 1px #000, 3px 3px 0 var(--accent), 0 0 24px rgba(163, 23, 44, 0.45);
+}
+
+.egg__big--small { font-size: clamp(36px, 6vw, 60px); text-transform: uppercase; }
+.egg__big--red { font-size: clamp(36px, 7vw, 68px); text-transform: uppercase; color: var(--accent); text-shadow: 0 0 1px #000, 3px 3px 0 #000; }
+
+.egg__sub {
+  margin: 0 0 6px;
+  font-size: clamp(18px, 2.6vw, 24px);
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.egg__text { margin: 2px 0; max-width: 34em; color: var(--text); font-size: clamp(16px, 2.3vw, 20px); line-height: 1.15; }
+.egg__meta { margin: 2px 0; color: var(--muted); font-size: clamp(16px, 2.3vw, 20px); }
+.egg__new { color: var(--accent); font-weight: 400; animation: blink 0.8s steps(2, jump-none) infinite; }
+
+.egg__h3 {
+  margin: 10px 0 2px;
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.egg__files {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  max-width: 36em;
+}
+
+/* Cada archivo recuperado es una hojita que abre su ficha. */
+.egg__files button {
+  padding: 1px 10px 1px 14px !important;
+  font-family: var(--doc-font) !important;
+  font-size: 15px !important;
+  color: var(--ink) !important;
+  background: var(--paper) !important;
+  border-left: 4px solid var(--accent) !important;
+}
+
+.egg__files button:hover, .egg__files button:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; background: #fff8e6 !important; }
+
+.egg__menu {
+  display: flex;
+  gap: 4px 28px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  font-size: clamp(24px, 3.6vw, 30px);
+}
+
+.egg__menu button { position: relative; padding: 0 12px; }
+.egg__menu button:focus, .egg__menu button:hover { color: #fff; outline: none; }
+.egg__menu button:focus::before { content: '▶'; position: absolute; left: -10px; color: var(--accent); font-size: 0.8em; top: 0.2em; }
+
+.egg__hint {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 2px 18px;
+  margin: 2px 0 0;
+  color: #6d685d;
+  font-size: 18px;
+}
+
+.egg.is-on .egg__screen { animation: egg-on 520ms steps(8, jump-end); }
+
+/* Encendido del CRT: una línea que se abre. */
+@keyframes egg-on {
+  0% { transform: scale(1, 0.006); filter: brightness(4); }
+  45% { transform: scale(1, 0.006); filter: brightness(4); }
+  100% { transform: none; filter: none; }
+}
+
+.reduce-motion .egg.is-on .egg__screen,
+.reduce-motion .egg__screen::after,
+.reduce-motion .egg__banner,
+.reduce-motion .egg__new { animation: none; }
+
+/* Teléfono o ventana baja: el minijuego ocupa toda la pantalla. */
+@media (max-width: 560px), (max-height: 520px) {
+  .egg { padding: 0; }
+  .egg__panel {
+    --screen-w: min(100vw - 24px, (100vh - 96px) * 4 / 3);
+    --screen-w: min(100vw - 24px, (100dvh - 96px) * 4 / 3);
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    gap: 6px;
+    padding: max(6px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+    border: 0;
+    box-shadow: none;
+    background: #0a090a;
+  }
+  .egg__brand { font-size: 22px; }
+  .egg__stats { gap: 0 12px; }
+  .egg__stats dt { font-size: 14px; }
+  .egg__hint { font-size: 16px; }
+  .egg__screen { border-radius: 6px / 5px; }
+}
+
+@media (max-height: 520px) {
+  /* Horizontal en el teléfono: marcador a un lado no cabe; se compacta la cabecera. */
+  .egg__head { flex-wrap: nowrap; }
+  .egg__hint { display: none; }
+  .egg__found, .egg__h3 { font-size: 14px; margin: 0; }
+  .egg__sub { margin: 0; }
+  .egg__menu { margin-top: 2px; }
+  .egg__panel {
+    --screen-w: min(100vw - 24px, (100vh - 52px) * 4 / 3);
+    --screen-w: min(100vw - 24px, (100dvh - 52px) * 4 / 3);
+  }
+}

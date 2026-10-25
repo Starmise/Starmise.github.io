@@ -22,6 +22,7 @@ import { Hud } from './ui/hud.js';
 import { TouchControls } from './ui/touchControls.js';
 import { SuggestDialog } from './ui/suggestDialog.js';
 import { installBackGuard } from './ui/backGuard.js';
+import { watchKonami } from './core/konami.js';
 import { resolveInteractable } from './ui/documents.js';
 import { audio } from './audio/audio.js';
 import { wireUiSounds } from './audio/uiSounds.js';
@@ -109,6 +110,30 @@ if (caps.slow) {
   title.setHint(t('game.slowHint', { reasons: caps.reasons.join('; ') }));
 }
 const suggest = new SuggestDialog(uiRoot, stack);
+
+// Easter egg: el código Konami (↑↑↓↓←→←→BA, también con mando o deslizando) abre el minijuego
+// "Rompemuros" (ui/breakout.js). Se descarga solo la primera vez que alguien lo encuentra.
+let egg = null;
+let eggLoading = false;
+const konami = watchKonami({
+  blocked: () => eggLoading || !!egg?.isOpen || listView.isOpen || transition.busy,
+  onCode: openEgg,
+});
+
+async function openEgg() {
+  eggLoading = true;
+  try {
+    if (!egg) {
+      const { Breakout } = await import('./ui/breakout.js');
+      egg = world.egg = new Breakout(uiRoot, stack, { input, audio, fileView, projects });
+    }
+    if (!listView.isOpen && !transition.busy) egg.open();
+  } catch (err) {
+    console.error(err);
+  } finally {
+    eggLoading = false;
+  }
+}
 
 stack.onChange = (open) => {
   input.setEnabled(!open);
@@ -266,7 +291,19 @@ function loop(time) {
   const rawDt = lastTime === null ? 0 : (time - lastTime) / 1000;
   lastTime = time;
   input.poll(time);
-  for (const action of input.consumeUi()) if (stack.isOpen) stack.dispatch(action, true);
+  for (const action of input.consumeUi()) {
+    if (konami.feed(action)) continue; // la Ⓐ que completa el código no llega a los menús
+    if (stack.isOpen) stack.dispatch(action, true);
+  }
+
+  // Con el minijuego abierto la mansión no se dibuja (queda la última imagen detrás) y el
+  // minijuego usa este mismo bucle.
+  if (egg?.isOpen) {
+    egg.frame(rawDt);
+    perf.sample(rawDt, false);
+    input.endFrame();
+    return;
+  }
 
   // Con el modo lista abierto el juego no se dibuja (solo se lee el mando para navegarla).
   if (listView.isOpen) {

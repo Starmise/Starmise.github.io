@@ -33,6 +33,7 @@ class AudioEngine {
     this.listOpen = false;
     this.paused = false;
     this.media = false;
+    this.minigame = false;
     this.room = null; // definición de rooms.json
     this.ambience = null;
     this.buffers = new Map();
@@ -85,6 +86,12 @@ class AudioEngine {
   /** Video del DemoReel sonando: callar música y ambiente. */
   setMedia(on) {
     this.media = on;
+    this.#applyDucking();
+  }
+
+  /** Minijuego secreto (ui/breakout.js): la mansión sigue sonando, lejos y apagada. */
+  setMinigame(on) {
+    this.minigame = on;
     this.#applyDucking();
   }
 
@@ -197,6 +204,7 @@ class AudioEngine {
       mood: this.score?.mood,
       paused: this.paused,
       media: this.media,
+      minigame: this.minigame,
       list: this.listOpen,
       hidden: this.hidden,
       level: Math.round(this.level()),
@@ -333,11 +341,11 @@ class AudioEngine {
   #applyDucking() {
     if (!this.ctx) return;
     const t = this.ctx.currentTime;
-    const music = this.media ? 0 : this.paused ? 0.55 : 1;
-    const amb = this.media ? 0 : this.paused ? 0.35 : 1;
+    const music = this.media ? 0 : this.minigame ? 0.4 : this.paused ? 0.55 : 1;
+    const amb = this.media ? 0 : this.minigame ? 0.2 : this.paused ? 0.35 : 1;
     this.musicDuck.gain.setTargetAtTime(music, t, 0.25);
     this.ambDuck.gain.setTargetAtTime(amb, t, 0.25);
-    this.musicFilter.frequency.setTargetAtTime(this.paused ? 1300 : 20000, t, 0.2);
+    this.musicFilter.frequency.setTargetAtTime(this.minigame ? 700 : this.paused ? 1300 : 20000, t, 0.2);
   }
 
   #setReverb(seconds) {

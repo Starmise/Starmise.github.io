@@ -169,6 +169,10 @@ Se implementará añadiendo un campo `room` a cada proyecto en `projects.json` y
   - [ ] **(TODO del usuario)** Probarlo en un teléfono real (Android e iPhone): sensación del joystick
         (radio 52 px, correr a 1.12× el radio), vibración (solo Android) y pantalla completa (no existe
         en iPhone para páginas web).
+- [x] **Easter egg: código Konami → minijuego "STARMISE · Rompemuros"** (rompe-ladrillos al estilo de
+      las consolas viejas, con la estética del portafolio; ver §6.7).
+  - [ ] **(TODO del usuario)** Probarlo con un mando real y en un teléfono real (código con
+        deslizamientos + dos toques; arrastrar para mover la barra).
 - [ ] **(TODO del usuario)** Enlazar la nueva versión desde el portafolio clásico (`About-Me-Website`, que
       Claude no edita): un botón o aviso hacia https://starmise.github.io/.
 
@@ -332,6 +336,35 @@ Todo el audio es **original y se sintetiza en el navegador** con Web Audio: no h
   Graph (generadas en el build) quedan en español con `og:locale:alternate = en_US`.
 - Coste: 2.7 kB (español) u 8 kB (inglés, con los datos) con gzip, más la pantalla de elección (~1 kB).
 
+### 6.7 Easter egg: STARMISE · Rompemuros
+- **Activación** (`core/konami.js`): ↑ ↑ ↓ ↓ ← → ← → B A con teclado; con mando, cruceta/stick y luego
+  Ⓑ Ⓐ (el bucle pasa las acciones de menú del mando por `konami.feed()`, que se traga la Ⓐ final para
+  que no haga clic en un menú); en táctil, ocho deslizamientos y dos toques (con eventos `touch*`: los de
+  puntero se cancelan cuando el navegador empieza a desplazar). Si pasan 3 s entre pulsaciones se
+  empieza de cero. Funciona en el título, jugando y con la pausa abierta; no en el modo lista ni durante
+  una puerta.
+- **Carga diferida:** `ui/breakout.js` + `audio/eggSfx.js` van en su propio bloque (~8 kB con gzip) y
+  solo se descargan al introducir el código. La carga inicial sube ~9 kB (detector, CSS y textos).
+- **Capa de la UiStack** (como la pausa): la mansión queda congelada detrás (el bucle deja de dibujar el
+  3D y llama a `egg.frame(dt)`), la música sigue lejos y filtrada (`audio.setMinigame`) y la ayuda del
+  HUD se oculta. Encendido de CRT al abrir; Esc / Start / ❚❚ pausan; ✕ o "Salir" vuelven a donde
+  estabas.
+- **Dibujo:** canvas de 320×240 escalado sin suavizado, fondo con el tramado 4×4 y papel tapiz, cristal
+  de CRT en CSS (líneas de barrido y viñeta). Marcador, avisos y menús en HTML (traducidos con `t()`).
+  La pelota es la estrella del favicon y la barra lleva las franjas roja y crema de la chaqueta del
+  personaje. Paleta: hueso (1 golpe), rojo (1), rojo oscuro (2, se agrieta), hierro (no se rompe), papel.
+- **Niveles:** 1 "La firma" (STAR / MISE en letras de ladrillos), 2 "La estrella" (el favicon píxel a
+  píxel), 3 "La mansión" (fachada con cornisa y puerta de hierro). Al terminar el 3 empieza otra vuelta
+  más rápida (los puntos se multiplican por la vuelta). 3 vidas, +1 cada 4000 puntos (máx. 5).
+- **Archivos del portafolio:** 3 ladrillos de papel por nivel sueltan una hoja (primero proyectos que
+  aún no tienes). Al atraparla se recupera ese archivo; al final de la partida se puede abrir su ficha de
+  siempre (`FileView`, recorriendo los de la partida). Récord y colección (n/22) se guardan en
+  `localStorage['starmise.egg']`.
+- **Presentación:** mientras está el menú, el nivel 1 se juega solo detrás (modo "attract", sin sonido).
+- **Controles:** ←/→, A/D o ratón; stick o cruceta; arrastrar en cualquier parte en táctil. Lanzar:
+  Espacio, Enter, ↑, clic, Ⓐ o un toque. Movimiento reducido: sin temblor, estela ni parpadeos.
+- Para depurar: `__game.egg` (estado, `bricks`, `ball`, `drops`…).
+
 ## 7. Estructura objetivo del repo
 
 ```
@@ -377,6 +410,11 @@ art/              Fuentes (FBX, .blend, PSD, plantillas UV) — no se publican
 - ~~¿Música propia o CC0?~~ Propia: compuesta en código y sintetizada en el navegador (Fase 6).
 
 ## 10. Registro de decisiones
+- **2026-10-24** — **Easter egg** a petición del usuario: el código Konami abre un rompe-ladrillos tipo
+  Atari "basado en Starmise" que mantiene la estética. Nombre propio ("STARMISE · Rompemuros" / "Wall
+  Breaker") en lugar de usar la marca del juego original; todo el arte y el sonido son originales.
+  Para que sea parte del portafolio y no solo un adorno, los ladrillos de papel sueltan archivos de
+  proyectos que luego se abren como fichas. Se carga bajo demanda para no tocar la carga inicial.
 - **2026-10-16** — **Móvil más cómodo** (rama `Polish-2`, a petición del usuario). Problemas que había:
   "atrás" en Android sacaba del portafolio; el joystick corría al llegar al borde (fácil de activar sin
   querer y sin margen para cambiar de dirección); los botones usaban `click` (retardo y fallos con dos

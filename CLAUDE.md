@@ -66,6 +66,8 @@ exportar `player.glb` desde Blender con `Idle`/`Walk`/`Run` (PLAN.md §5) — el
 `GalleryExample*`); comprobar 60 fps con F3 en un portátil medio; probar en Firefox, Safari y un
 teléfono real; cambiar en Settings → Pages la fuente a GitHub Actions y hacer push; enlazar el sitio
 nuevo desde el portafolio clásico; rehacer `public/og-image.jpg` cuando esté el personaje final.
+**Easter egg:** el código Konami (↑↑↓↓←→←→BA, también con mando o deslizando) abre el minijuego
+"STARMISE · Rompemuros" (rompe-ladrillos; PLAN.md §6.7).
 Rama `Polish-2`: controles e interacciones cómodos en móvil (PLAN.md §6.3c); falta probarlos en un
 teléfono real. Siguiente: revisar las salas y el audio con el usuario.
 
@@ -122,6 +124,7 @@ src/
   audio/sfx.js     Efectos sintetizados: pasos por suelo, puertas, reloj, crujidos, interfaz
   audio/uiSounds.js  Sonidos de menús conectados a la UiStack y a los clics (`data-sfx`)
   audio/dsp.js     Utilidades de síntesis (PRNG, biquad, ruidos, reverberación)
+  audio/eggSfx.js  Efectos del minijuego secreto (viajan con él; se añaden a SFX al cargarlo)
   core/input.js    Teclado + mando (Gamepad API) + táctil: acciones de juego y de menú
   core/settings.js Opciones del jugador (localStorage) con suscripción a cambios (incluye `lang`)
   core/i18n.js     Idioma: t('clave'), carga del diccionario, cambiar idioma (recarga), localizeData()
@@ -131,6 +134,7 @@ src/
   core/haptics.js  Vibración breve en táctil (opción "Vibración"; solo donde existe navigator.vibrate)
   core/fullscreen.js  Pantalla completa (+ fijar horizontal si se puede); no existe en iPhone
   core/assets.js   Rutas de miniaturas (thumbUrl) y de YouTube (miniatura, embed)
+  core/konami.js   Detector del código Konami (teclado, mando vía feed(), deslizamientos táctiles)
   render/ps1Material.js  Vertex snapping + mapeo afín (onBeforeCompile), conversión a Lambert
   render/ps1Renderer.js  Render a 240 px + post-proceso 15 bits con dithering
   world/roomManager.js   rooms.json → carga/caché de salas, precarga de vecinas
@@ -157,6 +161,7 @@ src/
   ui/imageViewer.js  Visor de la galería de una ficha (capa de la UiStack)
   ui/suggestDialog.js  Diálogo de dos opciones (sugerir el modo lista)
   ui/languageScreen.js Pantalla bilingüe de elección de idioma (primera visita)
+  ui/breakout.js   Easter egg "Rompemuros" (se descarga al introducir el código Konami)
   i18n/es.js, en.js  Textos de la interfaz por idioma (mismas claves); en.js trae también data/en/
   data/
     index.js       Exporta projects/profile/rooms ya en el idioma activo (usar esto, no los JSON)
@@ -229,6 +234,9 @@ La estructura objetivo (con `public/`, `art/`, etc.) está en `PLAN.md` §7.
   (`Input.dispatchTouchEvent` con `touchStart`/`touchMove`/`touchEnd`) y un dispositivo emulado
   (`devices['Pixel 7']`, viewport 915×412 en horizontal). En Chromium emulado `navigator.vibrate` existe
   (en iPhone real no) y la pantalla completa no se puede comprobar sin gesto real.
+- Easter egg: para probarlo sin teclear el código, en la consola no hay atajo; con Playwright basta con
+  pulsar la secuencia (`ArrowUp`… `KeyB`, `KeyA`) y luego leer `__game.egg`. Récord y colección del
+  minijuego: `localStorage['starmise.egg']` (borrarlo para empezar de cero).
 - `public/og-image.jpg` es una captura de la pantalla de título a 1200×630 (Playwright con las fuentes
   reales; el texto de "Pulsa Enter" se cambió por "Portafolio interactivo · Game Developer"). Rehacerla
   cuando cambie el personaje o el Hall. Las URL de Open Graph son absolutas (`profile.site.url`).
