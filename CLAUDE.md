@@ -50,17 +50,19 @@ música u otros sonidos con copyright (p. ej. OST comerciales): todo el audio es
 
 ## Estado actual
 
-Fases 0–6 completadas en código (pendientes del usuario abajo). Hay **seis salas**
+Fases 0–6 completadas en código (pendientes del usuario abajo). Hay **siete salas**
 (mansión): Hall (vitrina con los 4 destacados, diario con la bio, TV con el DemoReel), Ala Unreal
 (cuadros), Ala Unity (escritorios con CRT), Laboratorio (estaciones CRT), Sala de juegos (máquinas
-arcade) y Sala de guardado (contacto y curiosidades); cada proyecto es un objeto con su portada. Hay
+arcade), Taller (16 herramientas modulares de Unity para Attribute Overload, en cofres de herramientas;
+no mencionar que fueron prácticas) y Sala de guardado (contacto y curiosidades); cada proyecto es un objeto con su portada. Hay
 título con carga, menú de pausa (inventario, mapa, opciones), fichas navegables (con galería y video),
 soporte de mando y táctil, **modo lista** (HTML sin 3D; `#lista` en la URL), sugerencia de modo lista en
 equipos lentos, movimiento reducido, **audio original** (música continua "Nocturno de la mansión",
 ambiente por sala, pasos según el suelo, puertas y menús; todo sintetizado, sin archivos) y meta tags /
 Open Graph / favicon. Es **bilingüe**: la primera visita pregunta el idioma (Español / English) y se
 recuerda; se cambia desde el título, Opciones o el modo lista, o con `?lang=en|es` en la URL.
-**Pendiente (TODO del usuario):** textura final del personaje y
+**Pendiente (TODO del usuario):** capturas reales y revisión de textos de las fichas del Taller (PLAN.md Fase 4);
+textura final del personaje y
 exportar `player.glb` desde Blender con `Idle`/`Walk`/`Run` (PLAN.md §5) — el actual es **provisional**
 (solo `Walk`); imágenes finales de los proyectos e imágenes reales para `profile.gallery` (hoy
 `GalleryExample*`); comprobar 60 fps con F3 en un portátil medio; probar en Firefox, Safari y un
@@ -68,7 +70,7 @@ teléfono real; cambiar en Settings → Pages la fuente a GitHub Actions y hacer
 nuevo desde el portafolio clásico; rehacer `public/og-image.jpg` cuando esté el personaje final.
 **Easter egg:** el código Konami (↑↑↓↓←→←→BA, también con mando o deslizando) abre el minijuego
 "STARMISE · Rompemuros" (rompe-ladrillos; PLAN.md §6.7).
-Rama `Polish-2`: controles e interacciones cómodos en móvil (PLAN.md §6.3c); falta probarlos en un
+Rama `Modular-tools`: el Taller (PLAN.md Fase 4 y §6.3b). Rama `Polish-2`: controles e interacciones cómodos en móvil (PLAN.md §6.3c); falta probarlos en un
 teléfono real. Siguiente: revisar las salas y el audio con el usuario.
 
 Controles: WASD/flechas o stick mover · Shift/X correr · E/Enter/A examinar y abrir puertas ·
@@ -102,12 +104,13 @@ package.json       three + three-mesh-bvh + vite (+ sharp, solo para npm run ima
 scripts/optimize-images.mjs  art/img/* → public/img/<nombre>.webp (≤1280 px) + public/img/thumb/ (≤256 px)
 scripts/check-budgets.mjs    npm run budget: presupuestos de la Fase 5
 scripts/make-icons.mjs       npm run icons: favicon-32, apple-touch-icon, icon-192/512 desde favicon.svg
+scripts/make-tool-covers.py  Portadas provisionales del Taller (art/img/Tools*.png; no sobrescribe las que ya existan)
 .github/workflows/deploy.yml  Deploy a GitHub Pages
 public/            Se copia tal cual a dist/
   img/             Imágenes WebP generadas (~1.2 MB); los JSON las referencian como img/<nombre>.webp
   img/thumb/       Miniaturas ≤256 px (texturas de portada en las salas, galerías)
   models/player.glb  Personaje (PROVISIONAL: textura placeholder, solo la caminata "Walk")
-  models/rooms/    hall, unreal_wing, unity_wing, lab, game_room, save_room (.glb, de build_rooms.py)
+  models/rooms/    hall, unreal_wing, unity_wing, lab, game_room, workshop, save_room (.glb, de build_rooms.py)
   favicon.svg      Estrella pixel art 16×16 (fuente de los PNG de iconos)
   og-image.jpg     Vista previa de enlaces 1200×630 (captura del título)
   manifest.webmanifest  Nombre, colores e iconos para "añadir a la pantalla de inicio"
@@ -120,7 +123,7 @@ src/
   audio/audio.js   Motor de audio (Web Audio): desbloqueo con el primer gesto, buses y volúmenes,
                    pausa/video/modo lista/pestaña oculta, salas (ambiente, ánimo, suelo, reverb)
   audio/music.js   Música original "Nocturno de la mansión" (generada en vivo; ánimos tense/calm)
-  audio/ambience.js  Ambientes por sala (hall, gallery, studio, lab, arcade, save)
+  audio/ambience.js  Ambientes por sala (hall, gallery, studio, lab, arcade, workshop, save)
   audio/sfx.js     Efectos sintetizados: pasos por suelo, puertas, reloj, crujidos, interfaz
   audio/uiSounds.js  Sonidos de menús conectados a la UiStack y a los clics (`data-sfx`)
   audio/dsp.js     Utilidades de síntesis (PRNG, biquad, ruidos, reverberación)
@@ -165,7 +168,7 @@ src/
   i18n/es.js, en.js  Textos de la interfaz por idioma (mismas claves); en.js trae también data/en/
   data/
     index.js       Exporta projects/profile/rooms ya en el idioma activo (usar esto, no los JSON)
-    projects.json  FUENTE ÚNICA de los proyectos (22, con su sala en `room`)
+    projects.json  FUENTE ÚNICA de los proyectos (38, con su sala en `room`; 16 son del Taller)
     profile.json   Bio, estudio, DemoReel, habilidades, "qué hago", curiosidades, galería, contacto
     rooms.json     Salas: nombre, descripción, GLB (null = aún no construida), niebla, luz ambiente y
                    sonido (ambience, floor, reverb, mood)
@@ -177,7 +180,7 @@ art/character/     Fuentes del personaje (no se publican)
   PSX_Char_Male_Placeholder_1024.png / _256.png  Textura placeholder (base para pintar encima)
 art/img/           Imágenes originales en alta (~33 MB; fuente de npm run images, no se publican)
 art/rooms/
-  build_rooms.py     Script de Blender que genera las seis salas (.blend + .glb)
+  build_rooms.py     Script de Blender que genera las siete salas (.blend + .glb)
   <sala>.blend       Fuentes editables (guardadas con Blender 5.2)
 CLAUDE.md          Este archivo
 PLAN.md            Plan del proyecto (fases, decisiones, diseño técnico)

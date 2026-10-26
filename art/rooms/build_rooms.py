@@ -1,7 +1,7 @@
 """
 Salas del portafolio (Fase 4).
 
-Genera desde cero, con geometría low-poly y texturas procedurales de 64×64, las seis salas
+Genera desde cero, con geometría low-poly y texturas procedurales de 64×64, las siete salas
 del juego siguiendo la convención de nombres de PLAN.md §6.2, y las exporta como GLB:
 
     hall         Hall principal: vitrina con los 4 destacados, diario (bio), TV con el DemoReel
@@ -10,8 +10,9 @@ del juego siguiendo la convención de nombres de PLAN.md §6.2, y las exporta co
     lab          Laboratorio: estaciones de trabajo, servidores y un planetario
     game-room    Sala de juegos: máquinas arcade
     save-room    Sala de guardado: máquina de escribir (contacto) y libreta (curiosidades)
+    workshop     Taller: herramientas modulares (cofres de herramientas con tablero perforado)
 
-Cada proyecto es un objeto INT_<id> (cuadro, monitor, máquina arcade, pedestal…) con un hijo
+Cada proyecto es un objeto INT_<id> (cuadro, monitor, máquina arcade, cofre, pedestal…) con un hijo
 de material MAT_Cover, que el juego sustituye por la portada del proyecto en baja resolución.
 
 Cómo usarlo
@@ -486,6 +487,108 @@ def t_tv_body(rng):
     return rgb
 
 
+# ---------- Taller ----------
+
+
+def t_concrete(rng):
+    # Piso de concreto con juntas, manchas de aceite y algo de polvo.
+    rgb = fill([0.26, 0.25, 0.23]) + grain(rng, 0.06)
+    blot = rng.random((S // 8, S // 8)).repeat(8, 0).repeat(8, 1)[..., None] * 0.04
+    rgb += blot
+    for _ in range(3):
+        cx, cy, r = rng.integers(0, S), rng.integers(0, S), rng.integers(4, 9)
+        d = np.hypot((XX - cx + S // 2) % S - S // 2, (YY - cy + S // 2) % S - S // 2)
+        rgb[d < r] *= 0.78
+    rgb[(XX % 32 == 0) | (YY % 32 == 0)] = [0.15, 0.15, 0.14]
+    return rgb
+
+
+def t_brick(rng):
+    # Ladrillo rojo con juntas de mortero; cada hilada desplazada media pieza.
+    row = YY // 8
+    xs = (XX + (row % 2) * 8) % 16
+    rgb = fill([0.30, 0.12, 0.08]) + grain(rng, 0.05)
+    tone = rng.random((S // 8, S // 16 + 1))
+    idx = ((XX + (row % 2) * 8) // 16) % tone.shape[1]
+    rgb += (tone[row, idx][..., None] - 0.5) * 0.08
+    rgb[(YY % 8 == 0) | (xs == 0)] = [0.24, 0.22, 0.19]
+    damp = np.clip(1.0 - (YY / S) * 1.6, 0, 1) * rng.random((S, S)) * 0.06
+    return rgb - damp[..., None]
+
+
+def t_paint_band(rng):
+    # Zócalo de pintura industrial verde, con raspones y una línea superior.
+    rgb = fill([0.14, 0.22, 0.17]) + grain(rng, 0.03)
+    scuff = (rng.random((S, S)) > 0.985) | ((YY > 50) & (rng.random((S, S)) > 0.9))
+    rgb[scuff] = [0.30, 0.29, 0.26]
+    rgb[YY < 3] = [0.40, 0.32, 0.10]
+    return rgb
+
+
+def t_pegboard(rng):
+    # Tablero perforado con siluetas pintadas de herramientas a los lados (la portada va al centro).
+    rgb = fill([0.44, 0.33, 0.20]) + grain(rng, 0.03)
+    shadow = np.zeros((S, S), dtype=bool)
+    shadow |= (np.abs(XX - 6) < 1.5) & (YY > 12) & (YY < 46)          # destornillador
+    shadow |= (np.abs(XX - 6) < 3) & (YY > 40) & (YY < 52)
+    shadow |= (np.abs(XX - 57) < 1.5) & (YY > 14) & (YY < 50)         # martillo
+    shadow |= (np.abs(XX - 57) < 6) & (YY > 10) & (YY < 16)
+    shadow |= (np.abs(XX - 12) < 2) & (YY > 52) & (YY < 60) | (np.abs(XX - 52) < 2) & (YY > 54) & (YY < 60)
+    rgb[shadow] = [0.20, 0.13, 0.07]
+    holes = ((XX % 4) == 2) & ((YY % 4) == 2)
+    rgb[holes] = [0.12, 0.08, 0.05]
+    m = np.minimum(np.minimum(XX, S - 1 - XX), np.minimum(YY, S - 1 - YY))
+    rgb[m < 2] = [0.22, 0.14, 0.08]
+    return rgb
+
+
+def t_chest_paint(rng, color):
+    rgb = fill(color) + grain(rng, 0.035)
+    rgb[(rng.random((S, S)) > 0.992)] = [0.32, 0.32, 0.33]  # pintura saltada
+    return rgb
+
+
+def t_drawers(rng, color):
+    # Frente de un cofre de herramientas: cajones con jaladera metálica.
+    c = np.array(color)
+    rgb = fill(color) + grain(rng, 0.03)
+    edges = [0, 9, 18, 27, 38, 51, 64]  # cajones más altos abajo
+    for y0, y1 in zip(edges[:-1], edges[1:]):
+        rgb[y0:y0 + 1, :] = c * 0.35
+        rgb[y0 + 1:y0 + 2, :] = c * 1.35
+        mid = (y0 + y1) // 2
+        rgb[mid - 1:mid + 1, 14:50] = [0.62, 0.62, 0.60]
+        rgb[mid + 1, 14:50] = [0.18, 0.18, 0.19]
+    rgb[:, :2] = rgb[:, -2:] = c * 0.5
+    return rgb
+
+
+def t_hazard(rng):
+    # Franjas de seguridad amarillas y negras (desgastadas).
+    stripe = ((XX + YY) // 8) % 2
+    rgb = np.where(stripe[..., None], fill([0.55, 0.44, 0.06]), fill([0.06, 0.06, 0.06]))
+    rgb[rng.random((S, S)) > 0.93] = [0.22, 0.21, 0.19]
+    return rgb
+
+
+def t_locker(rng):
+    # Casillero metálico gris azulado con rejillas de ventilación arriba.
+    rgb = fill([0.24, 0.29, 0.32]) + grain(rng, 0.03)
+    vents = (YY > 6) & (YY < 18) & (YY % 3 == 0) & (XX > 12) & (XX < 52)
+    rgb[vents] = [0.08, 0.09, 0.10]
+    rgb[(XX < 2) | (XX > S - 3)] = [0.14, 0.16, 0.18]
+    rgb[30:36, 48:52] = [0.55, 0.55, 0.52]  # cerradura
+    return rgb
+
+
+CHEST_COLORS = {
+    "Red": [0.42, 0.07, 0.07],
+    "Blue": [0.08, 0.17, 0.40],
+    "Steel": [0.30, 0.32, 0.34],
+    "Green": [0.09, 0.27, 0.13],
+}
+
+
 # Registro: nombre del material → (función de textura, emisión, color multiplicador)
 TEXTURES = {
     "Floor_Marble": (t_marble_checker, 0, None),
@@ -537,6 +640,14 @@ TEXTURES = {
     "Fluorescent": (t_fluor, 1.5, None),
     "Window": (t_window, 0.8, None),
     "TV_Body": (t_tv_body, 0, None),
+    "Concrete": (t_concrete, 0, None),
+    "Brick": (t_brick, 0, None),
+    "Paint_Band": (t_paint_band, 0, None),
+    "Pegboard": (t_pegboard, 0, None),
+    "Hazard": (t_hazard, 0, None),
+    "Locker": (t_locker, 0, None),
+    **{f"Chest_{k}": ((lambda c: lambda r: t_chest_paint(r, c))(c), 0, None) for k, c in CHEST_COLORS.items()},
+    **{f"Drawers_{k}": ((lambda c: lambda r: t_drawers(r, c))(c), 0, None) for k, c in CHEST_COLORS.items()},
     # El juego sustituye esta textura por la portada del proyecto (projects.json).
     "Cover": (t_cover_placeholder, 0.9, None),
 }
@@ -987,6 +1098,35 @@ def arcade(project_id, xy, face, palette="Red"):
     return root
 
 
+def tool_chest(project_id, xy, face, palette="Red", extra=None):
+    """Cofre de herramientas contra un muro con un tablero perforado encima; la portada va
+    sujeta al tablero (INT_ = el cofre). `extra`: objeto pequeño sobre la tapa."""
+    w, dpt, h, gap = 0.9, 0.5, 0.92, 0.06
+    pos = wall_pos(xy, face, dpt / 2 + gap)
+    root = box(f"INT_{project_id}", (*pos, h / 2), (w, dpt, h), M(f"Chest_{palette}"), "Interactables", 0.5, face)
+    # Frente de cajones (sobresale 3 cm: con el vertex snapping lo coplanar parpadea).
+    stretched_box(f"DRAWERS_{project_id}", (0, -dpt / 2 - 0.015, -0.02), (w - 0.06, 0.03, h - 0.1),
+                  M(f"Drawers_{palette}"), "Interactables", parent=root)
+    box(f"CHESTTOP_{project_id}", (0, 0, h / 2 + 0.025), (w + 0.04, dpt + 0.04, 0.05), M("Wood"), "Interactables",
+        0.5, parent=root)
+    # Tablero en el muro (3 cm separado de la pared) con la portada colgada al centro.
+    peg = stretched_box(f"PEG_{project_id}", (0, dpt / 2 + gap - 0.045, 1.62 - h / 2), (1.1, 0.03, 0.95),
+                        M("Pegboard"), "Interactables", parent=root)
+    cover(project_id, (0, -0.045, 0.03), (0.6, 0.45), peg)
+    if extra == "box":
+        box(f"TOPBOX_{project_id}", (0.22, 0.02, h / 2 + 0.11), (0.3, 0.18, 0.12), M("Crate"), "Interactables", 0.5,
+            parent=root)
+    elif extra == "can":
+        cylinder(f"TOPCAN_{project_id}", (-0.26, 0.04, h / 2 + 0.12), 0.06, 0.14, M("Steel"), 6, parent=root)
+    elif extra == "lamp":
+        box(f"TOPLAMP_{project_id}", (0.3, 0.08, h / 2 + 0.2), (0.03, 0.03, 0.3), M("Metal"), "Interactables",
+            parent=root)
+        box(f"TOPLAMP_{project_id}_Shade", (0.3, -0.02, h / 2 + 0.36), (0.12, 0.16, 0.06), M("Lamp"), "Interactables",
+            parent=root)
+    collider(f"Chest_{project_id}", (*pos, 0.5), (w + 0.08, dpt + 0.08, 1.0), FACE[face])
+    return root
+
+
 # ---------- Decoración ----------
 
 
@@ -1041,7 +1181,7 @@ def fluorescent(name, xy, h, power, length=1.4, axis="X"):
 #      plantas                              plantas
 #   W [lab]     4 pedestales (destacados)    [game] E
 #      escritorio + diario      sillón + TV (DemoReel)
-#   S  [save]              alfombra · inicio
+#   S  [save]              alfombra · inicio            [workshop]
 # --------------------------------------------------------------------------------------
 
 
@@ -1126,16 +1266,19 @@ def build_hall():
     door_with_spawn("lab", (x0, 0.4), "E")
     door_with_spawn("game-room", (x1, 0.4), "W")
     door_with_spawn("save-room", (-4.2, y0), "N")
+    door_with_spawn("workshop", (4.2, y0), "N")
     spawn("default", (0.0, -3.9), "N")
 
     # Plantas y reloj de pie.
     plant("Plant_NW", (x0 + 0.5, y1 - 0.5))
     plant("Plant_NE", (x1 - 0.5, y1 - 0.5))
     plant("Plant_SE", (x1 - 0.5, y0 + 0.5))
-    box("Clock", (3.2, y0 + 0.25, 1.0), (0.55, 0.4, 2.0), M("Wood_Dark"), "Props", 0.5)
-    box("Clock_Face", (3.2, y0 + 0.44, 1.6), (0.38, 0.02, 0.38), M("Paper"), "Props", 0.5)
-    box("Clock_Pendulum", (3.2, y0 + 0.45, 0.85), (0.1, 0.02, 0.5), M("Brass"), "Props", 0.5)
-    collider("Clock", (3.2, y0 + 0.25, 1.0), (0.6, 0.45, 2.0))
+    # Reloj de pie en el muro este (en el sur taparía la puerta del Taller desde la CAM_2).
+    clock_y = 2.6
+    box("Clock", (x1 - 0.25, clock_y, 1.0), (0.4, 0.55, 2.0), M("Wood_Dark"), "Props", 0.5)
+    box("Clock_Face", (x1 - 0.44, clock_y, 1.6), (0.02, 0.38, 0.38), M("Paper"), "Props", 0.5)
+    box("Clock_Pendulum", (x1 - 0.45, clock_y, 0.85), (0.02, 0.1, 0.5), M("Brass"), "Props", 0.5)
+    collider("Clock", (x1 - 0.25, clock_y, 1.0), (0.45, 0.6, 2.0))
 
     # Candelabro central.
     cx, cy, cz = 0.0, -0.6, H - 0.9
@@ -1421,6 +1564,104 @@ def build_save_room():
 
 
 # --------------------------------------------------------------------------------------
+# Taller: herramientas modulares para Unity (10 × 8 m). Puerta al norte, hacia el Hall.
+#
+#   N  casilleros      [hall]        estante + bidones
+#   W  editor y         banco de      gameplay y
+#      tecnología       trabajo       servicios en línea   E
+#   S        IA · combate, misiones, inventario, crafting
+#
+# Cada herramienta es un cofre de herramientas con su portada en un tablero perforado; el
+# color del cofre indica el grupo (acero = editor/técnica, azul = IA, rojo = gameplay,
+# verde = servicios e interfaz).
+# --------------------------------------------------------------------------------------
+
+
+def build_workshop():
+    x0, x1, y0, y1, H = -5.0, 5.0, -8.0, 0.0, 3.2
+    rect_room(x0, x1, y0, y1, H, "Concrete", "Brick", "Paint_Band", "Ceiling", floor_uv=1.0, wainscot_h=1.1)
+    for i in range(1, 4):  # vigas metálicas
+        box(f"Beam_{i}", (0, -i * 2.0, H - 0.12), (x1 - x0, 0.16, 0.24), M("Metal"), "Props", 0.5)
+
+    ys = [-1.9, -3.2, -4.5, -5.8, -7.1]
+    west = [("spawning-tool", "lamp"), ("runtime-level-editor", None), ("occlusion-culling", "can"),
+            ("procedural-asset-generator", None), ("waypoint-pathfinding", "box")]
+    for (pid, extra), y in zip(west, ys):
+        tool_chest(pid, (x0, y), "E", "Blue" if pid == "waypoint-pathfinding" else "Steel", extra)
+    xs = [-3.25, -1.95, -0.65, 0.65, 1.95, 3.25]
+    south = [("npc-perception", "Blue", None), ("llm-ai", "Blue", "lamp"), ("modular-combat", "Red", None),
+             ("quest-system", "Red", "box"), ("modular-inventory", "Red", None), ("crafting-system", "Red", "can")]
+    for (pid, pal, extra), x in zip(south, xs):
+        tool_chest(pid, (x, y0), "N", pal, extra)
+    east = [("fair-round-system", "Red", None), ("anti-gravity", "Red", "box"), ("event-driven-ui", "Green", "lamp"),
+            ("google-accounts", "Green", None), ("achievements-system", "Green", "can")]
+    for (pid, pal, extra), y in zip(east, reversed(ys)):
+        tool_chest(pid, (x1, y), "W", pal, extra)
+
+    # Banco de trabajo al centro, con tornillo de banco, planos y una caja de herramientas.
+    bx, by = 0.0, -4.4
+    table("Workbench", (bx, by, 0.9), (2.8, 1.1, 0.9), "Wood")
+    box("Workbench_Shelf", (bx, by, 0.22), (2.6, 0.95, 0.04), M("Wood_Dark"), "Props", 0.5)
+    box("Workbench_Crate", (bx - 0.7, by, 0.36), (0.6, 0.5, 0.24), M("Crate"), "Props", 0.5)
+    box("Vise_Base", (bx + 1.05, by - 0.38, 0.95), (0.22, 0.2, 0.08), M("Steel"), "Props", 0.5)
+    box("Vise_Jaw_A", (bx + 1.05, by - 0.45, 1.05), (0.24, 0.05, 0.12), M("Steel"), "Props", 0.5)
+    box("Vise_Jaw_B", (bx + 1.05, by - 0.3, 1.05), (0.24, 0.05, 0.12), M("Steel"), "Props", 0.5)
+    box("Vise_Screw", (bx + 1.05, by - 0.56, 1.03), (0.03, 0.18, 0.03), M("Metal"), "Props", 0.5)
+    box("Blueprints", (bx - 0.3, by + 0.1, 0.91), (1.0, 0.7, 0.01), M("Paper"), "Props", 0.6)
+    box("Toolbox", (bx + 0.45, by + 0.25, 1.0), (0.45, 0.22, 0.18), M("Chest_Red"), "Props", 0.5)
+    box("Toolbox_Handle", (bx + 0.45, by + 0.25, 1.13), (0.3, 0.03, 0.03), M("Steel"), "Props", 0.5)
+    cylinder("Stool_Seat", (bx - 0.9, by - 0.95, 0.62), 0.2, 0.06, M("Wood_Dark"), 8)
+    cylinder("Stool_Leg", (bx - 0.9, by - 0.95, 0.3), 0.04, 0.6, M("Metal"), 6)
+    collider("Stool", (bx - 0.9, by - 0.95, 0.5), (0.45, 0.45, 1.0))
+    # Franjas de seguridad alrededor del banco.
+    m, t = 0.45, 0.12
+    ex, ey = 1.4 + m, 0.55 + m
+    floor_patch("Hazard_N", bx - ex, by + ey - t, bx + ex, by + ey, M("Hazard"), 0.015, uv_scale=0.5)
+    floor_patch("Hazard_S", bx - ex, by - ey, bx + ex, by - ey + t, M("Hazard"), 0.015, uv_scale=0.5)
+    floor_patch("Hazard_W", bx - ex, by - ey + t, bx - ex + t, by + ey - t, M("Hazard"), 0.015, uv_scale=0.5)
+    floor_patch("Hazard_E", bx + ex - t, by - ey + t, bx + ex, by + ey - t, M("Hazard"), 0.015, uv_scale=0.5)
+
+    # Muro norte: casilleros a un lado de la puerta, estante con cajas y bidones al otro.
+    for i, x in enumerate([-3.6, -3.05, -2.5]):
+        stretched_box(f"Locker_{i}", (x, y1 - 0.27, 0.95), (0.52, 0.46, 1.9), M("Locker"), "Props", "S")
+    collider("Lockers", (-3.05, y1 - 0.27, 1.0), (1.7, 0.5, 2.0))
+    sx = 2.6
+    for i, z in enumerate([0.1, 0.8, 1.5]):
+        box(f"Shelf_Board_{i}", (sx, y1 - 0.25, z), (1.6, 0.42, 0.04), M("Metal"), "Props", 0.5)
+    for s in (-1, 1):
+        box(f"Shelf_Post_{s}", (sx + s * 0.78, y1 - 0.25, 0.9), (0.04, 0.42, 1.8), M("Metal"), "Props", 0.5)
+    for i, (dx, z, w) in enumerate([(-0.4, 0.32, 0.6), (0.35, 0.3, 0.5), (-0.2, 1.0, 0.7), (0.5, 0.97, 0.3),
+                                    (0.1, 1.68, 0.5)]):
+        box(f"Shelf_Crate_{i}", (sx + dx, y1 - 0.25, z), (w, 0.34, w * 0.6), M("Crate"), "Props", 0.5)
+    collider("Shelf", (sx, y1 - 0.25, 1.0), (1.7, 0.5, 2.0))
+    for i, (x, y) in enumerate([(4.4, -0.55), (3.85, -0.5)]):
+        cylinder(f"Drum_{i}", (x, y, 0.45), 0.28, 0.9, M("Chest_Blue" if i else "Chest_Red"), 8)
+    collider("Drums", (4.12, -0.52, 0.5), (1.2, 0.65, 1.0))
+
+    door_with_spawn("hall", (0.0, y1), "S")
+    spawn("default", (0.0, -1.0), "S")
+
+    fluorescent("Light_Fluor_W", (-3.7, -4.5), H, 5.5, 1.6, "Y")
+    fluorescent("Light_Fluor_E", (3.7, -4.5), H, 5.5, 1.6, "Y")
+    fluorescent("Light_Fluor_S", (0.0, -6.8), H, 5.0, 1.6, "X")
+    fluorescent("Light_Bench", (bx, by), H, 4.5, 1.6, "X")  # pegada al techo: no tapa la CAM_3
+    light("Light_Entry", (0.0, -1.2, 2.6), 3.0, (1.0, 0.82, 0.6))
+
+    # Cámaras: la de la entrada, desde la esquina, enseña todo el taller al llegar; cada muro
+    # tiene además una cámara frontal (desde el muro de enfrente, con FOV cerrado) para que los
+    # cofres y el personaje se vean grandes. Los costados del banco quedan en las zonas laterales
+    # (la cámara sur, tan cerca, no los alcanza).
+    camera("CAM_1", (4.4, -0.45, 2.95), (-3.4, -5.0, 0.9), 58)    # entrada
+    zone("1", -2.6, 2.6, -3.9, y1 + 0.2)
+    camera("CAM_2", (4.5, -5.4, 2.7), (-5.0, -3.6, 1.0), 44)      # muro oeste
+    zone("2", x0 - 0.2, -1.8, y0 - 0.2, y1 + 0.2)
+    camera("CAM_3", (-4.5, -5.4, 2.7), (5.0, -3.6, 1.0), 44)      # muro este
+    zone("3", 1.8, x1 + 0.2, y0 - 0.2, y1 + 0.2)
+    camera("CAM_4", (0.0, -0.3, 2.75), (0.0, -8.0, 0.9), 52)      # muro sur
+    zone("4", -2.2, 2.2, y0 - 0.2, -3.5)
+
+
+# --------------------------------------------------------------------------------------
 # Construcción y exportación
 # --------------------------------------------------------------------------------------
 
@@ -1431,6 +1672,7 @@ ROOMS = {
     "lab": ("lab", build_lab),
     "game-room": ("game_room", build_game_room),
     "save-room": ("save_room", build_save_room),
+    "workshop": ("workshop", build_workshop),
 }
 
 

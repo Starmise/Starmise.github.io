@@ -19,6 +19,10 @@
     "name": "Game Room",
     "description": "Game jams and prototypes, on arcade cabinets."
   },
+  "workshop": {
+    "name": "Workshop",
+    "description": "Modular Unity tools built for Attribute Overload."
+  },
   "save-room": {
     "name": "Save Room",
     "description": "Contact and trivia."

@@ -7,11 +7,12 @@ lugar de tener textos escritos a mano en el código.
 El **español** (los JSON de esta carpeta) es la fuente única. La traducción al **inglés** vive en
 `en/` y solo trae los textos (ver [Traducción al inglés](#traducción-al-inglés)).
 
-- `projects.json` — los proyectos (copiado del portafolio original `About-Me-Website`).
+- `projects.json` — los proyectos (copiado del portafolio original `About-Me-Website`; los 16 del Taller,
+  `room: "workshop"`, se añadieron después y sus portadas provisionales salen de `scripts/make-tool-covers.py`).
 - `rooms.json` — salas del juego: `id`, `name`, `description`, `model` (GLB en `public/`,
   o `null` si la sala aún no está construida: el mapa la muestra como "Próximamente"), `fog`
   (`[cerca, lejos]` en metros) y `ambient` (intensidad de la luz ambiente, 0.75 por defecto).
-  Sonido de cada sala: `ambience` (`hall`, `gallery`, `studio`, `lab`, `arcade` o `save`; ver
+  Sonido de cada sala: `ambience` (`hall`, `gallery`, `studio`, `lab`, `arcade`, `workshop` o `save`; ver
   `src/audio/ambience.js`), `floor` para los pasos (`stone`, `wood`, `carpet`, `metal`), `reverb`
   (segundos de reverberación, según el tamaño) y `mood` opcional (`calm` = la música se calma,
   como en la Sala de guardado; por defecto `tense`).

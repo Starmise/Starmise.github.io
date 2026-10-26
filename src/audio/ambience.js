@@ -8,7 +8,7 @@ import { mtof } from './dsp.js';
  *   rumble  retumbo grave de la casa           hum    zumbido eléctrico de 60 Hz
  *   wind    viento que entra por las ventanas   fan    ventiladores (CRT, servidores)
  *   rain    lluvia sobre el techo               buzz   tubos de neón
- *   clock   reloj de pie (tic-tac)              creaks / seeks / bleeps  [min s, max s, volumen]
+ *   clock   reloj de pie (tic-tac)              creaks / seeks / bleeps / clinks  [min s, max s, volumen]
  */
 export const AMBIENCES = {
   hall: { rumble: 0.05, wind: 0.035, rain: 0.008, clock: 0.06, creaks: [14, 38, 0.11] },
@@ -17,6 +17,8 @@ export const AMBIENCES = {
   lab: { rumble: 0.02, hum: 0.016, fan: 0.03, seeks: [2.5, 8, 0.05] },
   arcade: { rumble: 0.025, hum: 0.012, buzz: 0.0035, bleeps: [6, 15, 0.014] },
   save: { rumble: 0.02, rain: 0.035 },
+  // Taller: tubos fluorescentes, lluvia en el tejado y alguna herramienta metálica que tintinea.
+  workshop: { rumble: 0.035, hum: 0.009, rain: 0.012, creaks: [20, 50, 0.07], clinks: [8, 22, 0.06] },
 };
 
 const PENTA = [62, 65, 67, 69, 72, 74, 77, 79, 81, 84]; // Re menor pentatónica (como la música)
@@ -42,7 +44,7 @@ export class Ambience {
     const t = when;
     const p = this.preset;
     if (p.clock) this.next.clock = t + 0.5;
-    for (const key of ['creaks', 'seeks', 'bleeps']) if (p[key]) this.next[key] = t + this.#wait(p[key]) * 0.5;
+    for (const key of ['creaks', 'seeks', 'bleeps', 'clinks']) if (p[key]) this.next[key] = t + this.#wait(p[key]) * 0.5;
   }
 
   fadeIn(when, seconds = 2.5) {
@@ -88,6 +90,15 @@ export class Ambience {
         e.play('latch', { when: this.next.seeks + i * (0.03 + Math.random() * 0.04), gain: gain * (0.4 + Math.random() * 0.6), rate: 2.2 + Math.random() * 0.6, bus: this.out });
       }
       this.next.seeks += this.#wait(p.seeks);
+    }
+    while (p.clinks && this.next.clinks < until) {
+      // Una herramienta que se asienta en su gancho: dos golpecitos metálicos graves.
+      const [, , gain] = p.clinks;
+      const rate = 0.5 + Math.random() * 0.3;
+      for (let i = 0; i < 2; i++) {
+        e.play('latch', { when: this.next.clinks + i * (0.09 + Math.random() * 0.08), gain: gain * (i ? 0.45 : 1), rate: rate * (i ? 1.12 : 1), bus: this.out, reverb: 0.9 });
+      }
+      this.next.clinks += this.#wait(p.clinks);
     }
     while (p.bleeps && this.next.bleeps < until) {
       this.#bleeps(this.next.bleeps, p.bleeps[2]);

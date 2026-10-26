@@ -57,6 +57,7 @@ licencia libre.
 | **Ala Unity** | `lucio-kart`, `off-the-hook`, `deadlock-escape`, `ar-foundation-vuforia`, `kiwi-procedural-agents`, `pcg-enemies` |
 | **Laboratorio** (motores y gráficos C++) | `kerberos-engine`★, `custom-2d-rendering-framework`, `solar-system-simulation` |
 | **Sala de juegos** (game jams y prototipos) | `persona-error`★, `pops-and-barks`, `memeception`, `cosmic-fang`, `lucio-galaxy`, `raboom`, `lucio-clicker-simulator`, `catharsis`★ |
+| **Taller** | Herramientas modulares para Unity hechas para Attribute Overload (16; ids en §6.3b) |
 | **Save room** | Contacto y curiosidades |
 
 Se implementará añadiendo un campo `room` a cada proyecto en `projects.json` y un
@@ -117,7 +118,16 @@ Se implementará añadiendo un campo `room` a cada proyecto en `projects.json` y
 - [ ] **(TODO del usuario)** Reemplazar las imágenes de galería de muestra (`GalleryExample*`):
       copiar las reales a `art/img/`, correr `npm run images` y actualizar `profile.gallery`.
       (Aún no se muestran en ninguna parte del juego.)
-- [ ] Revisión con el usuario: recorrer las seis salas y ajustar cámaras, luces y distribución.
+- [ ] Revisión con el usuario: recorrer las siete salas y ajustar cámaras, luces y distribución.
+- [x] **Taller** (sala `workshop`, puerta en el muro S del Hall): 16 herramientas modulares de Unity hechas
+      para Attribute Overload, una ficha por herramienta. Cada una es un cofre de herramientas con su portada en
+      un tablero perforado; el color del cofre indica el grupo (ver §6.3b). Ambiente sonoro propio (`workshop`).
+  - [ ] **(TODO del usuario)** Cambiar las portadas provisionales (`art/img/Tools*.png`, iconos generados con
+        `python scripts/make-tool-covers.py`) por capturas reales: copiar cada captura a `art/img/` con el mismo
+        nombre y correr `npm run images`. Si es una sola captura para todas, basta con apuntar los `cover` a ella.
+  - [ ] **(TODO del usuario)** Revisar los textos de las 16 fichas (`src/data/projects.json` y `en/projects.json`):
+        se escribieron solo a partir del nombre de cada herramienta, con un `process` y un `role` genéricos.
+        No mencionar que fueron prácticas profesionales.
 
 ### Fase 5 — Accesibilidad, móvil y rendimiento
 - [x] **Modo lista**: vista HTML accesible con todos los proyectos (misma app, mismos datos).
@@ -250,6 +260,13 @@ Todas se generan con `art/rooms/build_rooms.py` (texturas procedurales de 64×64
 | Laboratorio | `lab.glb` | 8×7 m, 3 estaciones CRT, servidores, planetario, pizarrón | muro O del Hall |
 | Sala de juegos | `game_room.glb` | 10×8 m, 8 máquinas arcade, billar, estrella de neón | muro E del Hall |
 | Sala de guardado | `save_room.glb` | 5×4 m, máquina de escribir (contacto) y libreta (curiosidades) | muro S del Hall |
+| Taller | `workshop.glb` | 10×8 m, 16 cofres de herramientas con tablero perforado, banco de trabajo, casilleros; 4 cámaras (entrada en la esquina + una frontal por muro) | muro S del Hall (lado este) |
+
+Taller, por muro (y color del cofre): **oeste** `spawning-tool`, `runtime-level-editor`, `occlusion-culling`,
+`procedural-asset-generator` (acero: editor y técnica) y `waypoint-pathfinding` (azul: IA); **sur** `npc-perception`,
+`llm-ai` (azul), `modular-combat`, `quest-system`, `modular-inventory`, `crafting-system` (rojo: gameplay); **este**
+`fair-round-system`, `anti-gravity` (rojo), `event-driven-ui`, `google-accounts`, `achievements-system` (verde:
+servicios e interfaz). Para hacerle sitio a su puerta, el reloj de pie del Hall pasó al muro este.
 
 Presupuesto: 600–2 700 triángulos por sala (35–137 draw calls); GLB de 150–400 kB. `npm run budget` lo
 comprueba (y la carga inicial).
@@ -303,7 +320,7 @@ Todo el audio es **original y se sintetiza en el navegador** con Web Audio: no h
 |---------|----------|
 | `audio.js` | Motor: crea el `AudioContext` en el primer gesto (tecla, clic o toque), buses música · ambiente · efectos · interfaz → limitador, volúmenes de Opciones (curva `v^1.6`), pausa (música con paso bajo y ambiente bajo), video del DemoReel (silencio), y suspende el contexto con la pestaña oculta, el modo lista o "Sonido: No". Programa con 1.2 s de antelación cada 200 ms. |
 | `music.js` | "Nocturno de la mansión": Re menor, 56 pulsos/min, un acorde cada 8 pulsos (~8.6 s). Colchón de sierras con paso bajo, bajo que se desliza, tema de caja de música (campanas FM con temblor de cinta) en las vueltas impares y notas sueltas en las pares; en modo tenso, viento, golpes metálicos, roces y retumbos lejanos. Ánimo `calm` (Sala de guardado): progresión en Fa mayor sin texturas. El cambio entra en el acorde siguiente. |
-| `ambience.js` | Ambientes por sala (`ambience` en `rooms.json`): `hall` (casa, viento, lluvia lejana, el reloj de pie, crujidos), `gallery`, `studio` (zumbido de 60 Hz y ventiladores de CRT), `lab` (servidores y discos duros), `arcade` (neón y arpegios lejanos en la escala de la música), `save` (lluvia). |
+| `ambience.js` | Ambientes por sala (`ambience` en `rooms.json`): `hall` (casa, viento, lluvia lejana, el reloj de pie, crujidos), `gallery`, `studio` (zumbido de 60 Hz y ventiladores de CRT), `lab` (servidores y discos duros), `arcade` (neón y arpegios lejanos en la escala de la música), `workshop` (fluorescentes, lluvia en el tejado y herramientas que tintinean), `save` (lluvia). |
 | `sfx.js` | Efectos calculados una vez a buffers: pasos por suelo (`floor`: stone, wood, carpet, metal; 4 variantes), picaporte, chirrido, portazo, puerta cerrada, reloj, crujidos y la interfaz (cursor, aceptar, volver, abrir/cerrar, papel, ficha, error, "Pulsa Start"). |
 | `uiSounds.js` | Conecta la `UiStack` (abrir/cerrar capas, mover el cursor, pestañas) y los clics (`data-sfx` cambia el sonido de un botón). |
 | `dsp.js` | Utilidades: PRNG con semilla, biquad, ruidos, reverberación sintética, envolventes. |
@@ -358,7 +375,7 @@ Todo el audio es **original y se sintetiza en el navegador** con Web Audio: no h
   más rápida (los puntos se multiplican por la vuelta). 3 vidas, +1 cada 4000 puntos (máx. 5).
 - **Archivos del portafolio:** 3 ladrillos de papel por nivel sueltan una hoja (primero proyectos que
   aún no tienes). Al atraparla se recupera ese archivo; al final de la partida se puede abrir su ficha de
-  siempre (`FileView`, recorriendo los de la partida). Récord y colección (n/22) se guardan en
+  siempre (`FileView`, recorriendo los de la partida). Récord y colección (n/38) se guardan en
   `localStorage['starmise.egg']`.
 - **Presentación:** mientras está el menú, el nivel 1 se juega solo detrás (modo "attract", sin sonido).
 - **Controles:** ←/→, A/D o ratón; stick o cruceta; arrastrar en cualquier parte en táctil. Lanzar:
@@ -370,7 +387,8 @@ Todo el audio es **original y se sintetiza en el navegador** con Web Audio: no h
 ```
 index.html
 vite.config.js
-scripts/          optimize-images.mjs (`npm run images`), make-icons.mjs (`npm run icons`), check-budgets.mjs
+scripts/          optimize-images.mjs (`npm run images`), make-icons.mjs (`npm run icons`), check-budgets.mjs,
+                  make-tool-covers.py (portadas provisionales del Taller)
 .github/workflows/deploy.yml   Publicación en GitHub Pages
 public/
   img/            Imágenes WebP (≤1280 px) generadas desde art/img/; img/thumb/ miniaturas (≤256 px)
@@ -389,7 +407,7 @@ src/
   data/           projects.json, profile.json, rooms.json (español) + en/ (traducción) + index.js
 art/              Fuentes (FBX, .blend, PSD, plantillas UV) — no se publican
   img/            Imágenes originales en alta (fuente de `npm run images`)
-  rooms/          build_rooms.py (genera las seis salas) y los .blend de las salas
+  rooms/          build_rooms.py (genera las siete salas) y los .blend de las salas
 ```
 
 ## 8. Riesgos
@@ -410,6 +428,16 @@ art/              Fuentes (FBX, .blend, PSD, plantillas UV) — no se publican
 - ~~¿Música propia o CC0?~~ Propia: compuesta en código y sintetizada en el navegador (Fase 6).
 
 ## 10. Registro de decisiones
+- **2026-10-25** — **Taller** (rama `Modular-tools`), a petición del usuario: una sala nueva con las 16
+  herramientas modulares que hizo en Unity para Attribute Overload. Sin mencionar que fueron prácticas
+  profesionales (lo pidió el usuario). Una ficha por herramienta (`room: "workshop"`), así que aparecen solas en
+  el mapa, el modo lista y la colección del minijuego (ahora 38 proyectos). Ambientación de taller (ladrillo,
+  concreto, banco de trabajo) con cofres de herramientas cuyo color agrupa las herramientas. Las cámaras laterales
+  son frontales con FOV cerrado (44°) desde el muro de enfrente porque, desde las esquinas, los cofres y el
+  personaje quedaban diminutos; los costados del banco son de las zonas laterales porque la cámara sur, tan cerca,
+  no los alcanza. La puerta del Hall va en el muro S (simétrica a la de la Sala de guardado) y el reloj de pie se
+  movió al muro E porque en el S tapaba esa puerta desde la CAM_2. Portadas provisionales originales (iconos de
+  plano técnico sin texto, para los dos idiomas) hasta que el usuario tenga capturas.
 - **2026-10-24** — **Easter egg** a petición del usuario: el código Konami abre un rompe-ladrillos tipo
   Atari "basado en Starmise" que mantiene la estética. Nombre propio ("STARMISE · Rompemuros" / "Wall
   Breaker") en lugar de usar la marca del juego original; todo el arte y el sonido son originales.

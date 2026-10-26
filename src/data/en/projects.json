@@ -160,5 +160,133 @@
     "process": "Memeception was our project for the Global Game Jam 2024, with the theme \"Make me laugh\", so, as usual for a game jam, it was developed in just one weekend. I handled the player's basic movement, the grappling hook system used throughout the level, the wall-running ability and the handling of masks/layers for different objects.",
     "role": "Player movement, grappling hook system, wall-running and mask/layer handling.",
     "externalLabel": "Learn more and play the game!"
+  },
+  "spawning-tool": {
+    "title": "Configurable Spawning Tool",
+    "tagline": "Unity editor tool — Attribute Overload",
+    "tags": ["Unity", "C#", "Editor Tool", "Spawning"],
+    "description": "Editor tool for defining and tuning from the Inspector which objects or enemies spawn in a scene, where and how often, without touching code.",
+    "process": "Built in Unity with C# for Attribute Overload, as part of a collection of modular tools meant to be reused across different projects.",
+    "role": "Design and programming."
+  },
+  "google-accounts": {
+    "title": "Google User Accounts",
+    "tagline": "Online services — Attribute Overload",
+    "tags": ["Unity", "C#", "Google Sign-In", "Authentication"],
+    "description": "Google account sign-in integration, so that every player has a user account tied to their profile.",
+    "process": "Built in Unity with C# for Attribute Overload, as part of a collection of modular tools meant to be reused across different projects.",
+    "role": "Design and programming."
+  },
+  "modular-combat": {
+    "title": "Modular Combat System",
+    "tagline": "Melee and ranged combat — Attribute Overload",
+    "tags": ["Unity", "C#", "Gameplay", "Combat"],
+    "description": "Combat system split into modules that covers melee and ranged attacks, so they can be combined and configured for each character or weapon.",
+    "process": "Built in Unity with C# for Attribute Overload, as part of a collection of modular tools meant to be reused across different projects.",
+    "role": "Design and programming."
+  },
+  "npc-perception": {
+    "title": "NPC Perception System",
+    "tagline": "AI sensors — Attribute Overload",
+    "tags": ["Unity", "C#", "AI", "NPCs"],
+    "description": "Artificial intelligence sensors that let NPCs detect the player and other elements of the environment, as the basis for them to react and make decisions.",
+    "process": "Built in Unity with C# for Attribute Overload, as part of a collection of modular tools meant to be reused across different projects.",
+    "role": "Design and programming."
+  },
+  "quest-system": {
+    "title": "Quest System",
+    "tagline": "Quest System — Attribute Overload",
+    "tags": ["Unity", "C#", "Gameplay", "Quest System"],
+    "description": "System for defining tasks and quests, tracking their progress and marking their objectives as completed.",
+    "process": "Built in Unity with C# for Attribute Overload, as part of a collection of modular tools meant to be reused across different projects.",
+    "role": "Design and programming."
+  },
+  "waypoint-pathfinding": {
+    "title": "Pathfinding with Waypoint Editor",
+    "tagline": "Custom navigation for AI — Attribute Overload",
+    "tags": ["Unity", "C#", "AI", "Pathfinding", "Editor Tool"],
+    "description": "Custom pathfinding system, paired with an editor for placing and connecting in the scene the waypoints that characters move along.",
+    "process": "Built in Unity with C# for Attribute Overload, as part of a collection of modular tools meant to be reused across different projects.",
+    "role": "Design and programming."
+  },
+  "runtime-level-editor": {
+    "title": "Runtime Level Editor",
+    "tagline": "In-game map editing — Attribute Overload",
+    "tags": ["Unity", "C#", "Tools", "Runtime"],
+    "description": "Map or level editor that works while the game is running, for building and changing levels without opening the Unity editor.",
+    "process": "Built in Unity with C# for Attribute Overload, as part of a collection of modular tools meant to be reused across different projects.",
+    "role": "Design and programming."
+  },
+  "llm-ai": {
+    "title": "LLM-Powered AI System",
+    "tagline": "Language models in the game — Attribute Overload",
+    "tags": ["Unity", "C#", "AI", "LLM"],
+    "description": "System that connects large language models (LLMs) to the game to give characters AI-generated responses and behaviours.",
+    "process": "Built in Unity with C# for Attribute Overload, as part of a collection of modular tools meant to be reused across different projects.",
+    "role": "Design and programming."
+  },
+  "occlusion-culling": {
+    "title": "Occlusion Culling",
+    "tagline": "Rendering optimization — Attribute Overload",
+    "tags": ["Unity", "C#", "Optimization", "Rendering"],
+    "description": "Selective culling system that skips drawing objects hidden behind others, reducing GPU work and improving performance.",
+    "process": "Built in Unity with C# for Attribute Overload, as part of a collection of modular tools meant to be reused across different projects.",
+    "role": "Design and programming."
+  },
+  "procedural-asset-generator": {
+    "title": "Runtime Procedural Asset Generator",
+    "tagline": "Textures, meshes and audio — Attribute Overload",
+    "tags": ["Unity", "C#", "Procedural generation", "Runtime"],
+    "description": "Generator that creates textures, meshes and audio procedurally while the game runs, without relying on hand-made files.",
+    "process": "Built in Unity with C# for Attribute Overload, as part of a collection of modular tools meant to be reused across different projects.",
+    "role": "Design and programming."
+  },
+  "fair-round-system": {
+    "title": "Round System for Fairground Games",
+    "tagline": "Round-based play — Attribute Overload",
+    "tags": ["Unity", "C#", "Gameplay", "Game Loop"],
+    "description": "Round-based game system designed for fairground minigames, handling the start, the play and the end of each round.",
+    "process": "Built in Unity with C# for Attribute Overload, as part of a collection of modular tools meant to be reused across different projects.",
+    "role": "Design and programming."
+  },
+  "achievements-system": {
+    "title": "Achievements and Medals System",
+    "tagline": "Google, Steam or local achievements — Attribute Overload",
+    "tags": ["Unity", "C#", "Achievements", "Steam", "Google"],
+    "description": "Achievements and medals system that works with Google, with Steam and in a local mode, to record the player's progress.",
+    "process": "Built in Unity with C# for Attribute Overload, as part of a collection of modular tools meant to be reused across different projects.",
+    "role": "Design and programming."
+  },
+  "event-driven-ui": {
+    "title": "Event-Driven Dynamic UI",
+    "tagline": "Reactive interface — Attribute Overload",
+    "tags": ["Unity", "C#", "UI", "Events"],
+    "description": "Interface system that updates from game events, so the UI reacts to changes without being tightly coupled to the game logic.",
+    "process": "Built in Unity with C# for Attribute Overload, as part of a collection of modular tools meant to be reused across different projects.",
+    "role": "Design and programming."
+  },
+  "crafting-system": {
+    "title": "Crafting System",
+    "tagline": "Item crafting — Attribute Overload",
+    "tags": ["Unity", "C#", "Gameplay", "Crafting"],
+    "description": "Crafting system that combines materials through recipes to obtain new items.",
+    "process": "Built in Unity with C# for Attribute Overload, as part of a collection of modular tools meant to be reused across different projects.",
+    "role": "Design and programming."
+  },
+  "modular-inventory": {
+    "title": "Modular Inventory System",
+    "tagline": "Item management — Attribute Overload",
+    "tags": ["Unity", "C#", "Gameplay", "Inventory"],
+    "description": "Inventory built from modules for storing, organizing and using the player's items, and adapting to different kinds of games.",
+    "process": "Built in Unity with C# for Attribute Overload, as part of a collection of modular tools meant to be reused across different projects.",
+    "role": "Design and programming."
+  },
+  "anti-gravity": {
+    "title": "3D Character Anti-Gravity",
+    "tagline": "Character movement — Attribute Overload",
+    "tags": ["Unity", "C#", "Gameplay", "Physics"],
+    "description": "Anti-gravity system for a 3D character, changing how gravity affects it and letting it move in ways a conventional controller can't.",
+    "process": "Built in Unity with C# for Attribute Overload, as part of a collection of modular tools meant to be reused across different projects.",
+    "role": "Design and programming."
   }
 }
